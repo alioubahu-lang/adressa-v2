@@ -1,0 +1,204 @@
+// ADRESSA — Schéma de base de données
+// Conçu pour évoluer vers plusieurs millions d'adresses, multi-pays, multi-territoires.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  AGENT
+  MUNICIPAL
+  VIEWER
+}
+
+enum AddressStatus {
+  BROUILLON
+  COLLECTE
+  A_VERIFIER
+  VERIFIE
+  PUBLIE
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(AGENT)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  addressesCreated Address[]        @relation("AddressCreatedBy")
+  addressesUpdated Address[]        @relation("AddressUpdatedBy")
+  historyEntries   AddressHistory[]
+
+  @@map("users")
+}
+
+model Country {
+  id      String   @id @default(cuid())
+  name    String
+  code    String   @unique // ex: SN
+  regions Region[]
+
+  @@map("countries")
+}
+
+model Region {
+  id          String       @id @default(cuid())
+  countryId   String
+  name        String
+  country     Country      @relation(fields: [countryId], references: [id])
+  departments Department[]
+
+  @@index([countryId])
+  @@map("regions")
+}
+
+model Department {
+  id       String    @id @default(cuid())
+  regionId String
+  name     String
+  region   Region    @relation(fields: [regionId], references: [id])
+  communes Commune[]
+
+  @@index([regionId])
+  @@map("departments")
+}
+
+model Commune {
+  id           String         @id @default(cuid())
+  departmentId String
+  name         String
+  code         String? // ex: SBK — utilisé pour générer les IDs ADRESSA
+  department   Department     @relation(fields: [departmentId], references: [id])
+  neighborhoods Neighborhood[]
+  addresses    Address[]
+
+  @@index([departmentId])
+  @@map("communes")
+}
+
+model Neighborhood {
+  id        String    @id @default(cuid())
+  communeId String
+  name      String
+  commune   Commune   @relation(fields: [communeId], references: [id])
+  streets   Street[]
+  addresses Address[]
+
+  @@index([communeId])
+  @@map("neighborhoods")
+}
+
+model Street {
+  id             String        @id @default(cuid())
+  neighborhoodId String
+  name           String
+  code           String?
+  neighborhood   Neighborhood  @relation(fields: [neighborhoodId], references: [id])
+  addresses      Address[]
+
+  @@index([neighborhoodId])
+  @@map("streets")
+}
+
+model Address {
+  id               String        @id @default(cuid())
+  adresssaId       String        @unique // ex: SN-SBK-001
+  countryId        String
+  regionId         String
+  departmentId     String
+  communeId        String
+  neighborhoodId   String
+  streetId         String?
+  buildingNumber   String?
+  latitude         Float
+  longitude        Float
+  entranceLatitude Float?
+  entranceLongitude Float?
+  plusCode         String?
+  landmark         String?
+  description      String?
+  photoUrl         String?
+  status           AddressStatus @default(BROUILLON)
+  verified         Boolean       @default(false)
+  createdById      String?
+  updatedById      String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  country      Country       @relation(fields: [countryId], references: [id])
+  region       Region        @relation(fields: [regionId], references: [id])
+  department   Department    @relation(fields: [departmentId], references: [id])
+  commune      Commune       @relation(fields: [communeId], references: [id])
+  neighborhood Neighborhood  @relation(fields: [neighborhoodId], references: [id])
+  street       Street?       @relation(fields: [streetId], references: [id])
+  createdBy    User?         @relation("AddressCreatedBy", fields: [createdById], references: [id])
+  updatedBy    User?         @relation("AddressUpdatedBy", fields: [updatedById], references: [id])
+
+  qrCode  QrCode?
+  scans   Scan[]
+  history AddressHistory[]
+
+  @@index([communeId])
+  @@index([neighborhoodId])
+  @@index([status])
+  @@map("addresses")
+}
+
+model QrCode {
+  id        String   @id @default(cuid())
+  addressId String   @unique
+  code      String   @unique // = adresssaId, séparé pour permettre une rotation future
+  targetUrl String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  address Address @relation(fields: [addressId], references: [id])
+  scans   Scan[]
+
+  @@map("qr_codes")
+}
+
+model Scan {
+  id        String   @id @default(cuid())
+  qrCodeId  String
+  addressId String
+  date      DateTime @default(now())
+  device    String?
+  country   String?
+  city      String?
+  referrer  String?
+
+  qrCode  QrCode  @relation(fields: [qrCodeId], references: [id])
+  address Address @relation(fields: [addressId], references: [id])
+
+  @@index([addressId])
+  @@index([date])
+  @@map("scans")
+}
+
+model AddressHistory {
+  id        String   @id @default(cuid())
+  addressId String
+  userId    String?
+  action    String
+  oldValue  String?
+  newValue  String?
+  createdAt DateTime @default(now())
+
+  address Address @relation(fields: [addressId], references: [id])
+  user    User?   @relation(fields: [userId], references: [id])
+
+  @@index([addressId])
+  @@map("address_history")
+}

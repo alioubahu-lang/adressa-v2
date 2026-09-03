@@ -1,0 +1,18 @@
+node_modules
+.next
+.env
+.env.local
+*.log
+.DS_Store
+dist
+coverage
+.vercel
+tsconfig.tsbuildinfo
+
+# Fichiers générés automatiquement par next-pwa au build — ne pas committer
+public/sw.js
+public/sw.js.map
+public/workbox-*.js
+public/workbox-*.js.map
+public/swe-worker-*.js
+public/fallback-*.js

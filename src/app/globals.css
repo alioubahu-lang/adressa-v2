@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl bg-adressa-deep px-5 py-3 font-semibold text-white transition hover:bg-adressa-green;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl bg-adressa-light px-5 py-3 font-semibold text-adressa-deep transition hover:bg-white border border-adressa-deep/10;
+}
+
+.card {
+  @apply rounded-xl2 border border-black/5 bg-white p-6 shadow-sm;
+}
