@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum Role {
@@ -47,6 +48,7 @@ model Country {
   name    String
   code    String   @unique // ex: SN
   regions Region[]
+  addresses Address[]
 
   @@map("countries")
 }
@@ -57,6 +59,7 @@ model Region {
   name        String
   country     Country      @relation(fields: [countryId], references: [id])
   departments Department[]
+  addresses   Address[]
 
   @@index([countryId])
   @@map("regions")
@@ -68,6 +71,7 @@ model Department {
   name     String
   region   Region    @relation(fields: [regionId], references: [id])
   communes Commune[]
+  addresses Address[]
 
   @@index([regionId])
   @@map("departments")
