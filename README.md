@@ -68,7 +68,21 @@ npm test
 
 Couvre notamment l'unicité et le format de génération des identifiants ADRESSA (`SN-SBK-001`, puis passage automatique à 6 chiffres au-delà de 999 adresses par commune, ex. `SN-DKR-000001`).
 
-## 7. Déploiement (Vercel)
+## 7. Dépôt GitHub
+
+Le projet est livré avec un dépôt git déjà initialisé (un premier commit est fait). Pour le publier :
+
+```bash
+# Créez d'abord un dépôt vide sur GitHub (sans README ni .gitignore), puis :
+git remote add origin git@github.com:VOTRE-COMPTE/adressa-v2.git
+git branch -M main
+git push -u origin main
+```
+
+Un workflow CI (`.github/workflows/ci.yml`) est déjà en place : à chaque push, il installe les
+dépendances, génère le client Prisma, vérifie les types, lance les tests et le build.
+
+## 8. Déploiement (Vercel)
 
 1. Poussez le projet sur GitHub.
 2. Connectez le dépôt à Vercel.
@@ -78,7 +92,7 @@ Couvre notamment l'unicité et le format de génération des identifiants ADRESS
 6. Déployez. Vérifiez HTTPS, le rendu mobile, le scan des QR codes et l'accès dashboard.
 7. Configurez le domaine officiel (`adressa.sn` ou `adressa.africa`) dans Vercel une fois acheté.
 
-## 8. Architecture des données
+## 9. Architecture des données
 
 ```
 Country → Region → Department → Commune → Neighborhood → Street → Address
@@ -91,7 +105,7 @@ L'identifiant ADRESSA (`adresssaId`) est unique, généré automatiquement au fo
 chiffres pour les communes dépassant 999 adresses (ex. `SN-DKR-000001`), sans jamais
 changer le format des identifiants déjà attribués.
 
-## 9. Sécurité
+## 10. Sécurité
 
 - Mots de passe hashés (bcrypt), jamais en clair
 - Contrôle des rôles sur chaque route API sensible (création, modification, suppression)
@@ -99,7 +113,7 @@ changer le format des identifiants déjà attribués.
 - Aucune donnée personnelle des occupants stockée ou affichée publiquement
 - Les scans QR n'enregistrent aucune donnée personnelle (user-agent tronqué, pas d'IP)
 
-## 10. Ce qui est prêt vs. ce qui reste à brancher pour la V3
+## 11. Ce qui est prêt vs. ce qui reste à brancher pour la V3
 
 **Prêt et fonctionnel :**
 API complète, dashboard, site public, carte, QR dynamique, recherche, authentification et
