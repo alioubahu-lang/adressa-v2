@@ -1,5 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
+import nextDynamic from "next/dynamic";
+import { HeroSearch } from "@/components/HeroSearch";
+import { prisma } from "@/lib/prisma";
+
+const MapView = nextDynamic(() => import("@/components/MapView"), { ssr: false });
+
+export const dynamic = "force-dynamic";
 
 const sections = [
   { title: "Comment ça marche", text: "Chaque bâtiment reçoit un identifiant unique, une position GPS précise et une page d'adresse numérique accessible par QR." },
@@ -14,7 +21,13 @@ const sections = [
   { title: "Vision Afrique", text: "Du Sénégal à l'Afrique de l'Ouest : une infrastructure d'identité géographique panafricaine." }
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [totalAddresses, verifiedAddresses, communesCovered] = await Promise.all([
+    prisma.address.count({ where: { status: "PUBLIE" } }),
+    prisma.address.count({ where: { status: "PUBLIE", verified: true } }),
+    prisma.address.groupBy({ by: ["communeId"], where: { status: "PUBLIE" } }).then((r: unknown[]) => r.length)
+  ]);
+
   return (
     <main>
       <header className="border-b border-black/5 bg-white/80 backdrop-blur sticky top-0 z-10">
@@ -39,14 +52,43 @@ export default function HomePage() {
           <p className="mx-auto mt-6 max-w-2xl text-lg text-white/80">
             ADRESSA transforme chaque bâtiment en une adresse numérique précise, vérifiable et partageable.
           </p>
-          <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <Link href="/search" className="btn-primary bg-white text-adressa-deep hover:bg-adressa-light">
-              Rechercher une adresse
-            </Link>
-            <Link href="#comment-ca-marche" className="btn-secondary bg-transparent text-white border-white/30 hover:bg-white/10">
-              Découvrir ADRESSA
-            </Link>
+
+          <HeroSearch />
+
+          <p className="mt-4 text-sm text-white/50">
+            Essayez avec un vrai identifiant : <span className="font-mono text-white/70">SN-SBK-001</span>
+          </p>
+
+          <div className="mt-10 flex flex-wrap justify-center gap-8 text-sm text-white/70">
+            <div>
+              <div className="text-2xl font-black text-white">{totalAddresses}</div>
+              adresse{totalAddresses > 1 ? "s" : ""} active{totalAddresses > 1 ? "s" : ""}
+            </div>
+            <div>
+              <div className="text-2xl font-black text-white">{verifiedAddresses}</div>
+              vérifiée{verifiedAddresses > 1 ? "s" : ""}
+            </div>
+            <div>
+              <div className="text-2xl font-black text-white">{communesCovered}</div>
+              commune{communesCovered > 1 ? "s" : ""} couverte{communesCovered > 1 ? "s" : ""}
+            </div>
           </div>
+
+          <Link href="#comment-ca-marche" className="mt-8 inline-block text-sm text-white/50 underline hover:text-white/80">
+            Découvrir comment ça marche ↓
+          </Link>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-6 py-16">
+        <div className="mb-6 text-center">
+          <h2 className="text-2xl font-bold text-adressa-deep">La carte, en direct</h2>
+          <p className="mt-2 text-adressa-ink/60">
+            Voici les adresses réellement enregistrées dans ADRESSA aujourd'hui — pas une maquette.
+          </p>
+        </div>
+        <div className="h-96 overflow-hidden rounded-xl2 border border-black/5 shadow-sm">
+          <MapView />
         </div>
       </section>
 
