@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,7 +28,10 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-adressa-deep px-6">
       <form onSubmit={handleSubmit} className="w-full max-w-sm rounded-xl2 bg-white p-8 shadow-xl">
-        <div className="mb-6 text-center text-2xl font-black tracking-widest text-adressa-deep">ADRESSA</div>
+        <div className="mb-6 flex flex-col items-center gap-2">
+          <Image src="/logo-icon-512.png" alt="ADRESSA" width={64} height={64} className="rounded-2xl" />
+          <span className="text-2xl font-black tracking-widest text-adressa-deep">ADRESSA</span>
+        </div>
         <label className="mb-1 block text-sm font-medium text-adressa-ink/70">Email</label>
         <input
           type="email"

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const sections = [
   { title: "Comment ça marche", text: "Chaque bâtiment reçoit un identifiant unique, une position GPS précise et une page d'adresse numérique accessible par QR." },
@@ -18,7 +19,10 @@ export default function HomePage() {
     <main>
       <header className="border-b border-black/5 bg-white/80 backdrop-blur sticky top-0 z-10">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <span className="text-xl font-black tracking-widest text-adressa-deep">ADRESSA</span>
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/logo-icon-512.png" alt="ADRESSA" width={36} height={36} className="rounded-lg" />
+            <span className="text-xl font-black tracking-widest text-adressa-deep">ADRESSA</span>
+          </Link>
           <nav className="hidden gap-6 text-sm font-medium text-adressa-ink/70 md:flex">
             <Link href="/search" className="hover:text-adressa-deep">Rechercher</Link>
             <Link href="/map" className="hover:text-adressa-deep">Carte</Link>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 
 async function getAddress(id: string) {
@@ -47,7 +48,10 @@ export default async function PublicAddressPage({ params }: { params: { id: stri
   return (
     <main className="mx-auto min-h-screen max-w-md bg-white pb-16">
       <header className="bg-adressa-deep px-6 py-8 text-white">
-        <div className="text-xl font-black tracking-widest">ADRESSA</div>
+        <div className="flex items-center gap-2">
+          <Image src="/logo-icon-512.png" alt="ADRESSA" width={32} height={32} className="rounded-lg" />
+          <span className="text-xl font-black tracking-widest">ADRESSA</span>
+        </div>
         {address.verified && (
           <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">
             ✓ Adresse vérifiée

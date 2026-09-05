@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const items = [
   { href: "/dashboard", label: "Vue générale" },
@@ -11,7 +12,10 @@ const items = [
 export function Sidebar() {
   return (
     <aside className="hidden w-60 shrink-0 flex-col border-r border-black/5 bg-white px-4 py-6 md:flex">
-      <div className="mb-8 px-2 text-lg font-black tracking-widest text-adressa-deep">ADRESSA</div>
+      <div className="mb-8 flex items-center gap-2 px-2">
+        <Image src="/logo-icon-512.png" alt="ADRESSA" width={28} height={28} className="rounded-md" />
+        <span className="text-lg font-black tracking-widest text-adressa-deep">ADRESSA</span>
+      </div>
       <nav className="flex flex-col gap-1">
         {items.map((item) => (
           <Link
