@@ -17,3 +17,28 @@ html {
 .card {
   @apply rounded-xl2 border border-black/5 bg-white p-6 shadow-sm;
 }
+
+@keyframes blob-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.08); }
+  66% { transform: translate(-20px, 15px) scale(0.95); }
+}
+
+.animate-blob {
+  animation: blob-float 10s ease-in-out infinite;
+}
+
+.animate-blob-delay {
+  animation: blob-float 12s ease-in-out infinite;
+  animation-delay: -4s;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  70% { transform: scale(1.4); opacity: 0; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

@@ -2,6 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 import nextDynamic from "next/dynamic";
 import { HeroSearch } from "@/components/HeroSearch";
+import { AnimatedCounter } from "@/components/AnimatedCounter";
+import { FadeIn } from "@/components/FadeIn";
 import { prisma } from "@/lib/prisma";
 
 const MapView = nextDynamic(() => import("@/components/MapView"), { ssr: false });
@@ -9,16 +11,16 @@ const MapView = nextDynamic(() => import("@/components/MapView"), { ssr: false }
 export const dynamic = "force-dynamic";
 
 const sections = [
-  { title: "Comment ça marche", text: "Chaque bâtiment reçoit un identifiant unique, une position GPS précise et une page d'adresse numérique accessible par QR." },
-  { title: "Une plaque physique", text: "Une plaque simple, posée sur le bâtiment, portant l'identifiant ADRESSA et un QR code dynamique." },
-  { title: "Une identité numérique", text: "Derrière chaque plaque, une fiche vérifiée : GPS, quartier, repère, photo, historique." },
-  { title: "GPS précis", text: "ADRESSA ROUTE guide jusqu'à l'entrée exacte du bâtiment, pas seulement jusqu'au quartier." },
-  { title: "QR dynamique", text: "Le QR pointe vers ADRESSA, jamais directement vers une carte figée. La destination peut évoluer sans changer la plaque." },
-  { title: "ADRESSA ROUTE", text: "Point d'entrée, repère et itinéraire précis pour ne plus jamais se perdre." },
-  { title: "Pour les citoyens", text: "Recevoir des colis, donner rendez-vous, partager sa position en un lien." },
-  { title: "Pour les entreprises", text: "Livraison, e-commerce, transport : une adresse fiable pour chaque client." },
-  { title: "Pour les collectivités", text: "Un dashboard complet pour cartographier, vérifier et administrer le territoire." },
-  { title: "Vision Afrique", text: "Du Sénégal à l'Afrique de l'Ouest : une infrastructure d'identité géographique panafricaine." }
+  { icon: "🆔", title: "Comment ça marche", text: "Chaque bâtiment reçoit un identifiant unique, une position GPS précise et une page d'adresse numérique accessible par QR." },
+  { icon: "🪧", title: "Une plaque physique", text: "Une plaque simple, posée sur le bâtiment, portant l'identifiant ADRESSA et un QR code dynamique." },
+  { icon: "🧾", title: "Une identité numérique", text: "Derrière chaque plaque, une fiche vérifiée : GPS, quartier, repère, photo, historique." },
+  { icon: "🎯", title: "GPS précis", text: "ADRESSA ROUTE guide jusqu'à l'entrée exacte du bâtiment, pas seulement jusqu'au quartier." },
+  { icon: "📲", title: "QR dynamique", text: "Le QR pointe vers ADRESSA, jamais directement vers une carte figée. La destination peut évoluer sans changer la plaque." },
+  { icon: "🧭", title: "ADRESSA ROUTE", text: "Point d'entrée, repère et itinéraire précis pour ne plus jamais se perdre." },
+  { icon: "👤", title: "Pour les citoyens", text: "Recevoir des colis, donner rendez-vous, partager sa position en un lien." },
+  { icon: "🚚", title: "Pour les entreprises", text: "Livraison, e-commerce, transport : une adresse fiable pour chaque client." },
+  { icon: "🏛️", title: "Pour les collectivités", text: "Un dashboard complet pour cartographier, vérifier et administrer le territoire." },
+  { icon: "🌍", title: "Vision Afrique", text: "Du Sénégal à l'Afrique de l'Ouest : une infrastructure d'identité géographique panafricaine." }
 ];
 
 export default async function HomePage() {
@@ -46,8 +48,17 @@ export default async function HomePage() {
         </div>
       </header>
 
-      <section className="bg-adressa-deep px-6 py-24 text-white">
-        <div className="mx-auto max-w-4xl text-center">
+      <section className="relative overflow-hidden bg-adressa-deep px-6 py-24 text-white">
+        <div
+          aria-hidden
+          className="animate-blob pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-adressa-green/30 blur-3xl"
+        />
+        <div
+          aria-hidden
+          className="animate-blob-delay pointer-events-none absolute -bottom-32 -right-16 h-96 w-96 rounded-full bg-sky-500/20 blur-3xl"
+        />
+
+        <div className="relative mx-auto max-w-4xl text-center">
           <h1 className="text-4xl font-black leading-tight md:text-6xl">Chaque lieu a une identité.</h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-white/80">
             ADRESSA transforme chaque bâtiment en une adresse numérique précise, vérifiable et partageable.
@@ -59,18 +70,28 @@ export default async function HomePage() {
             Essayez avec un vrai identifiant : <span className="font-mono text-white/70">SN-SBK-001</span>
           </p>
 
-          <div className="mt-10 flex flex-wrap justify-center gap-8 text-sm text-white/70">
-            <div>
-              <div className="text-2xl font-black text-white">{totalAddresses}</div>
-              adresse{totalAddresses > 1 ? "s" : ""} active{totalAddresses > 1 ? "s" : ""}
+          <div className="mt-10 flex flex-wrap justify-center gap-4">
+            <div className="min-w-[130px] rounded-2xl bg-white/10 px-6 py-4 backdrop-blur">
+              <div className="text-3xl font-black text-white">
+                <AnimatedCounter value={totalAddresses} />
+              </div>
+              <div className="mt-1 text-xs text-white/60">
+                adresse{totalAddresses > 1 ? "s" : ""} active{totalAddresses > 1 ? "s" : ""}
+              </div>
             </div>
-            <div>
-              <div className="text-2xl font-black text-white">{verifiedAddresses}</div>
-              vérifiée{verifiedAddresses > 1 ? "s" : ""}
+            <div className="min-w-[130px] rounded-2xl bg-white/10 px-6 py-4 backdrop-blur">
+              <div className="text-3xl font-black text-white">
+                <AnimatedCounter value={verifiedAddresses} />
+              </div>
+              <div className="mt-1 text-xs text-white/60">vérifiée{verifiedAddresses > 1 ? "s" : ""}</div>
             </div>
-            <div>
-              <div className="text-2xl font-black text-white">{communesCovered}</div>
-              commune{communesCovered > 1 ? "s" : ""} couverte{communesCovered > 1 ? "s" : ""}
+            <div className="min-w-[130px] rounded-2xl bg-white/10 px-6 py-4 backdrop-blur">
+              <div className="text-3xl font-black text-white">
+                <AnimatedCounter value={communesCovered} />
+              </div>
+              <div className="mt-1 text-xs text-white/60">
+                commune{communesCovered > 1 ? "s" : ""} couverte{communesCovered > 1 ? "s" : ""}
+              </div>
             </div>
           </div>
 
@@ -81,39 +102,51 @@ export default async function HomePage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-6 py-16">
-        <div className="mb-6 text-center">
-          <h2 className="text-2xl font-bold text-adressa-deep">La carte, en direct</h2>
-          <p className="mt-2 text-adressa-ink/60">
-            Voici les adresses réellement enregistrées dans ADRESSA aujourd'hui — pas une maquette.
-          </p>
-        </div>
-        <div className="h-96 overflow-hidden rounded-xl2 border border-black/5 shadow-sm">
-          <MapView />
-        </div>
+        <FadeIn>
+          <div className="mb-6 text-center">
+            <h2 className="text-2xl font-bold text-adressa-deep">La carte, en direct</h2>
+            <p className="mt-2 text-adressa-ink/60">
+              Voici les adresses réellement enregistrées dans ADRESSA aujourd'hui — pas une maquette.
+            </p>
+          </div>
+        </FadeIn>
+        <FadeIn delay={150}>
+          <div className="h-96 overflow-hidden rounded-xl2 border border-black/5 shadow-sm transition-shadow hover:shadow-lg">
+            <MapView />
+          </div>
+        </FadeIn>
       </section>
 
       <section id="comment-ca-marche" className="mx-auto max-w-6xl px-6 py-20">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {sections.map((s) => (
-            <div key={s.title} className="card">
-              <h3 className="mb-2 text-lg font-bold text-adressa-deep">{s.title}</h3>
-              <p className="text-sm text-adressa-ink/70">{s.text}</p>
-            </div>
+          {sections.map((s, i) => (
+            <FadeIn key={s.title} delay={i * 60}>
+              <div className="card h-full transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                <div className="mb-3 text-3xl">{s.icon}</div>
+                <h3 className="mb-2 text-lg font-bold text-adressa-deep">{s.title}</h3>
+                <p className="text-sm text-adressa-ink/70">{s.text}</p>
+              </div>
+            </FadeIn>
           ))}
         </div>
       </section>
 
       <section className="bg-white px-6 py-16">
-        <div className="mx-auto max-w-4xl text-center">
-          <h2 className="text-2xl font-bold text-adressa-deep">Pilote : Sébikotane</h2>
-          <p className="mt-3 text-adressa-ink/70">
-            Le projet démarre avec 5 adresses pilotes à Sébikotane, quartier Dogar, avant de s'étendre aux autres
-            villes du Sénégal puis à l'Afrique de l'Ouest.
-          </p>
-          <Link href="/a/SN-SBK-001" className="btn-primary mt-6 inline-flex">
-            Voir un exemple : SN-SBK-001
-          </Link>
-        </div>
+        <FadeIn>
+          <div className="mx-auto max-w-4xl text-center">
+            <h2 className="text-2xl font-bold text-adressa-deep">Pilote : Sébikotane</h2>
+            <p className="mt-3 text-adressa-ink/70">
+              Le projet démarre avec 5 adresses pilotes à Sébikotane, quartier Dogar, avant de s'étendre aux autres
+              villes du Sénégal puis à l'Afrique de l'Ouest.
+            </p>
+            <div className="relative mt-6 inline-flex">
+              <span className="animate-pulse-ring absolute inset-0 rounded-xl bg-adressa-green/40" />
+              <Link href="/a/SN-SBK-001" className="btn-primary relative">
+                Voir un exemple : SN-SBK-001
+              </Link>
+            </div>
+          </div>
+        </FadeIn>
       </section>
 
       <footer className="border-t border-black/5 px-6 py-8 text-center text-xs text-adressa-ink/50">
