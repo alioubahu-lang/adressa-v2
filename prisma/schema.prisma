@@ -132,6 +132,7 @@ model Address {
   landmark         String?
   description      String?
   photoUrl         String?
+  buildingType     String? // ex: "Maison individuelle" — renseigné au cas par cas, jamais déduit
   status           AddressStatus @default(BROUILLON)
   verified         Boolean       @default(false)
   createdById      String?

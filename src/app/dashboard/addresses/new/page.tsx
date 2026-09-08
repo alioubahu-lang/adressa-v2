@@ -20,6 +20,7 @@ export default function NewAddressPage() {
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
   const [plusCode, setPlusCode] = useState("");
+  const [buildingType, setBuildingType] = useState("");
   const [landmark, setLandmark] = useState("");
   const [description, setDescription] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -109,7 +110,8 @@ export default function NewAddressPage() {
         longitude: Number(longitude),
         plusCode: plusCode || undefined,
         landmark: landmark || undefined,
-        description: description || undefined
+        description: description || undefined,
+        buildingType: buildingType || undefined
       };
 
       if (photoFile) {
@@ -148,6 +150,7 @@ export default function NewAddressPage() {
         plusCode: plusCode || undefined,
         landmark: landmark || undefined,
         description: description || undefined,
+        buildingType: buildingType || undefined,
         photoUrl
       })
     });
@@ -235,6 +238,16 @@ export default function NewAddressPage() {
         <div>
           <label className="mb-1 block text-sm font-medium text-adressa-ink/70">Plus Code (optionnel)</label>
           <input value={plusCode} onChange={(e) => setPlusCode(e.target.value)} className="w-full rounded-lg border border-black/10 px-3 py-2" />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-adressa-ink/70">Type de bâtiment (optionnel)</label>
+          <input
+            value={buildingType}
+            onChange={(e) => setBuildingType(e.target.value)}
+            placeholder="ex : Maison individuelle, Commerce, Immeuble…"
+            className="w-full rounded-lg border border-black/10 px-3 py-2"
+          />
         </div>
 
         <div>

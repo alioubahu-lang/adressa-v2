@@ -62,9 +62,13 @@ export default async function PublicAddressPage({ params }: { params: { id: stri
   const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${address.latitude},${address.longitude}`;
 
   const whatsappMessage =
-    `Voici l'adresse ADRESSA :\n\n${address.adresssaId}\n${address.commune.name} — ${address.neighborhood.name}\n\n` +
+    `Voici une adresse ADRESSA :\n\n${address.adresssaId}\n${address.commune.name} — ${address.neighborhood.name}\n\n` +
+    (address.landmark ? `📍 Repère : ${address.landmark}\n\n` : "") +
     `Voir l'adresse :\n${publicUrl}`;
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`;
+
+  const bigActionButton =
+    "flex items-center justify-center gap-2 rounded-xl px-4 py-4 text-sm font-bold transition";
 
   return (
     <main className="min-h-screen bg-adressa-gray pb-16">
@@ -80,7 +84,7 @@ export default async function PublicAddressPage({ params }: { params: { id: stri
           <div className="md:col-span-2">
             {address.verified && (
               <div className="mb-3 inline-flex items-center gap-1 rounded-full bg-adressa-light px-3 py-1 text-xs font-semibold text-adressa-deep">
-                ✓ Adresse vérifiée
+                ✓ ADRESSE VÉRIFIÉE
               </div>
             )}
 
@@ -88,10 +92,9 @@ export default async function PublicAddressPage({ params }: { params: { id: stri
             <p className="mt-1 text-adressa-ink/70">
               📍 {address.commune.name} — {address.neighborhood.name}
             </p>
-            <p className="mt-2 text-xs text-adressa-ink/50">
-              Identifiant permanent — l&apos;identité numérique unique de ce bâtiment dans le système ADRESSA.{" "}
-              <CopyButton value={address.adresssaId} label="Copier l'identifiant" copiedLabel="Identifiant copié !" />
-            </p>
+            {address.buildingType && (
+              <p className="mt-1 text-sm font-medium text-adressa-ink/60">{address.buildingType}</p>
+            )}
 
             {/* Photo */}
             {address.photoUrl ? (
@@ -107,35 +110,6 @@ export default async function PublicAddressPage({ params }: { params: { id: stri
               </div>
             )}
 
-            {/* Actions */}
-            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <a href="#carte" className="btn-primary justify-center text-sm">
-                📍 Voir sur la carte
-              </a>
-              <a
-                href={directionsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-secondary justify-center text-sm"
-              >
-                🧭 Itinéraire
-              </a>
-              <ShareButton
-                url={publicUrl}
-                title={`ADRESSA — ${address.adresssaId}`}
-                text={`${address.commune.name} — ${address.neighborhood.name}`}
-                className="btn-secondary justify-center text-sm"
-              />
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-secondary justify-center text-sm"
-              >
-                💬 WhatsApp
-              </a>
-            </div>
-
             {/* Informations de l'adresse */}
             <div className="card mt-6">
               <h2 className="mb-4 text-lg font-bold text-adressa-deep">Informations de l&apos;adresse</h2>
@@ -147,12 +121,12 @@ export default async function PublicAddressPage({ params }: { params: { id: stri
                   <dd className="mt-1 font-mono text-sm text-adressa-deep">{address.adresssaId}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs font-semibold uppercase tracking-wide text-adressa-ink/50">🏠 Commune</dt>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-adressa-ink/50">📍 Commune</dt>
                   <dd className="mt-1 text-sm text-adressa-ink">{address.commune.name}</dd>
                 </div>
                 <div>
                   <dt className="text-xs font-semibold uppercase tracking-wide text-adressa-ink/50">
-                    📍 Quartier / Secteur
+                    🏘️ Quartier / Secteur
                   </dt>
                   <dd className="mt-1 text-sm text-adressa-ink">{address.neighborhood.name}</dd>
                 </div>
@@ -188,21 +162,33 @@ export default async function PublicAddressPage({ params }: { params: { id: stri
               </dl>
             </div>
 
-            {address.verified && (
-              <div className="mt-6 rounded-xl bg-adressa-light p-4 text-sm">
-                <p className="font-semibold text-adressa-deep">✓ Adresse vérifiée sur le terrain</p>
-                <p className="mt-1 text-adressa-ink/70">
-                  Cette adresse a été vérifiée et géolocalisée sur le terrain par ADRESSA.
-                </p>
-              </div>
-            )}
-
-            <div className="card mt-6">
-              <h2 className="mb-2 text-lg font-bold text-adressa-deep">À propos du secteur</h2>
-              <p className="text-sm text-adressa-ink/70">
-                {address.neighborhood.name} — {address.commune.name}
-                {address.landmark ? `, à proximité de ${address.landmark}` : ""}.
-              </p>
+            {/* Gros boutons d'action — mobile-first, un par ligne sur petit écran */}
+            <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <a
+                href={directionsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${bigActionButton} bg-adressa-deep text-white hover:bg-adressa-green`}
+              >
+                🧭 Itinéraire
+              </a>
+              <a href="#carte" className={`${bigActionButton} bg-adressa-light text-adressa-deep hover:bg-white border border-adressa-deep/10`}>
+                📍 Voir sur la carte
+              </a>
+              <ShareButton
+                url={publicUrl}
+                title={`Adresse ADRESSA — ${address.adresssaId}`}
+                text={`${address.commune.name} — ${address.neighborhood.name}`}
+                className={`${bigActionButton} bg-adressa-light text-adressa-deep hover:bg-white border border-adressa-deep/10`}
+              />
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${bigActionButton} bg-[#25D366] text-white hover:brightness-95`}
+              >
+                💬 WhatsApp
+              </a>
             </div>
 
             {/* Carte interactive */}
@@ -217,15 +203,6 @@ export default async function PublicAddressPage({ params }: { params: { id: stri
                 />
               </div>
             </div>
-
-            <div className="mt-6 text-center">
-              <a
-                href={`mailto:?subject=Signaler une erreur ${address.adresssaId}`}
-                className="text-xs text-adressa-ink/40 underline"
-              >
-                Signaler une erreur
-              </a>
-            </div>
           </div>
 
           {/* Colonne latérale : QR code */}
@@ -237,10 +214,59 @@ export default async function PublicAddressPage({ params }: { params: { id: stri
                 alt={`QR code ADRESSA de l'adresse ${address.adresssaId}`}
                 className="mx-auto h-40 w-40"
               />
-              <p className="mt-3 text-sm font-semibold text-adressa-deep">QR Code ADRESSA</p>
-              <p className="mt-1 text-xs text-adressa-ink/60">Scannez pour accéder à cette adresse</p>
+              <p className="mt-3 text-sm font-bold text-adressa-deep">Scanner cette adresse</p>
+              <p className="mt-1 text-xs text-adressa-ink/60">
+                Scannez pour accéder rapidement à cette adresse.
+              </p>
             </div>
           </aside>
+        </div>
+
+        {/* Sections pleine largeur, sous les deux colonnes */}
+        <div className="mt-8 space-y-6">
+          <div className="card">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-adressa-ink/50">
+              Identifiant permanent
+            </h2>
+            <p className="mt-2 text-2xl font-black text-adressa-deep">{address.adresssaId}</p>
+            <p className="mt-2 text-sm text-adressa-ink/70">
+              Cet identifiant constitue l&apos;identité numérique unique de ce bâtiment dans le système ADRESSA.
+            </p>
+            <div className="mt-3">
+              <CopyButton
+                value={address.adresssaId}
+                label="Copier l'identifiant"
+                copiedLabel="Identifiant copié !"
+                className="btn-secondary inline-flex text-sm"
+              />
+            </div>
+          </div>
+
+          {address.verified && (
+            <div className="rounded-xl bg-adressa-light p-4 text-sm">
+              <p className="font-semibold text-adressa-deep">✓ Adresse vérifiée sur le terrain</p>
+              <p className="mt-1 text-adressa-ink/70">
+                Cette adresse a été vérifiée et géolocalisée sur le terrain par ADRESSA.
+              </p>
+            </div>
+          )}
+
+          <div className="card">
+            <h2 className="mb-2 text-lg font-bold text-adressa-deep">À propos du secteur</h2>
+            <p className="text-sm text-adressa-ink/70">
+              {address.neighborhood.name} — {address.commune.name}
+              {address.landmark ? `, à proximité de ${address.landmark}` : ""}.
+            </p>
+          </div>
+
+          <div className="text-center">
+            <a
+              href={`mailto:?subject=Signaler une erreur ${address.adresssaId}`}
+              className="text-xs text-adressa-ink/40 underline"
+            >
+              Signaler une erreur
+            </a>
+          </div>
         </div>
 
         <p className="mt-10 text-center text-xs text-adressa-ink/40">Cette adresse est identifiée par ADRESSA.</p>
