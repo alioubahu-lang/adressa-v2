@@ -19,6 +19,7 @@ const createAddressSchema = z.object({
   entranceLongitude: z.number().min(-180).max(180).optional().nullable(),
   plusCode: z.string().optional().nullable(),
   landmark: z.string().optional().nullable(),
+  buildingType: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
   photoUrl: z.string().url().optional().nullable()
 });
@@ -92,6 +93,7 @@ export async function POST(req: NextRequest) {
       entranceLongitude: data.entranceLongitude ?? null,
       plusCode: data.plusCode ?? null,
       landmark: data.landmark ?? null,
+      buildingType: data.buildingType ?? null,
       description: data.description ?? null,
       photoUrl: data.photoUrl ?? null,
       status: "COLLECTE",

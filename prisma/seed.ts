@@ -71,7 +71,7 @@ async function main() {
   for (const [index, a] of PILOT_ADDRESSES.entries()) {
     const address = await prisma.address.upsert({
       where: { adresssaId: a.id },
-      update: {},
+      update: { buildingType: "Maison individuelle" },
       create: {
         adresssaId: a.id,
         countryId: country.id,
@@ -83,6 +83,7 @@ async function main() {
         longitude: a.lng,
         plusCode: a.plusCode,
         landmark: "À proximité de TotalEnergies Sébikotane",
+        buildingType: "Maison individuelle",
         status: "PUBLIE",
         verified: true
       }
