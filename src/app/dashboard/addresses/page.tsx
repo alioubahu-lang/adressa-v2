@@ -68,6 +68,9 @@ export default async function DashboardAddressesPage({ searchParams }: { searchP
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
+                    <Link href={`/dashboard/addresses/${a.adresssaId}/edit`} className="text-adressa-green underline">
+                      Modifier
+                    </Link>
                     <Link href={`/a/${a.adresssaId}`} className="text-adressa-green underline">
                       Voir
                     </Link>
