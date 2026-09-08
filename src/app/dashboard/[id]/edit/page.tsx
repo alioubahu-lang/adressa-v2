@@ -59,6 +59,24 @@ export default function EditAddressPage({ params }: { params: { id: string } }) 
     setPhotoPreview(URL.createObjectURL(file));
   }
 
+  async function handleDelete() {
+    if (!address) return;
+    const confirmed = window.confirm(
+      `Supprimer définitivement ${address.adresssaId} ? Cette action est irréversible.`
+    );
+    if (!confirmed) return;
+
+    setLoading(true);
+    const res = await fetch(`/api/address/${address.adresssaId}`, { method: "DELETE" });
+    setLoading(false);
+
+    if (!res.ok) {
+      setError("Suppression impossible (droits insuffisants ou erreur serveur).");
+      return;
+    }
+    router.push("/dashboard/addresses");
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!address) return;
@@ -218,6 +236,21 @@ export default function EditAddressPage({ params }: { params: { id: string } }) 
           </Link>
         </div>
       </form>
+
+      <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4">
+        <p className="text-sm font-semibold text-red-700">Zone dangereuse</p>
+        <p className="mt-1 text-xs text-red-600/80">
+          Supprime définitivement cette adresse, son QR code et son historique. Action irréversible.
+        </p>
+        <button
+          type="button"
+          onClick={handleDelete}
+          disabled={loading}
+          className="mt-3 rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100"
+        >
+          🗑️ Supprimer cette adresse
+        </button>
+      </div>
     </div>
   );
 }
