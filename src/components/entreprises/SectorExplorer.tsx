@@ -18,10 +18,10 @@ export function SectorExplorer() {
               key={sector.id}
               type="button"
               onClick={() => setSelectedId(sector.id)}
-              className={`flex flex-col items-start gap-2 rounded-2xl border p-4 text-left transition ${
+              className={`flex flex-col items-start gap-2 rounded-2xl border p-4 text-left transition-all duration-200 ${
                 isActive
-                  ? "border-adressa-green bg-adressa-light shadow-md"
-                  : "border-black/5 bg-white hover:border-adressa-green/40 hover:shadow-sm"
+                  ? "border-2 border-adressa-green bg-adressa-light/60 shadow-lg scale-[1.02]"
+                  : "border border-black/5 bg-white hover:border-adressa-green/40 hover:shadow-md"
               }`}
             >
               <sector.Icon
