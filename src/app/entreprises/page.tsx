@@ -1,34 +1,61 @@
-import Link from "next/link";
+import { SiteHeader } from "@/components/SiteHeader";
+import { EntreprisesHero } from "@/components/entreprises/EntreprisesHero";
+import { SectorExplorer } from "@/components/entreprises/SectorExplorer";
+import { RoiCalculator } from "@/components/entreprises/RoiCalculator";
 
-const usages = [
-  "Livraison",
-  "E-commerce",
-  "Transport",
-  "Immobilier",
-  "Banques",
-  "Assurances",
-  "Télécommunications",
-  "Services à domicile"
-];
-
-export const metadata = { title: "Pour les entreprises" };
+export const metadata = {
+  title: "Pour les entreprises — API ADRESSA",
+  description:
+    "Intégrez des adresses précises, vérifiées et géolocalisées dans vos applications grâce à l'API ADRESSA."
+};
 
 export default function EntreprisesPage() {
   return (
-    <main className="mx-auto max-w-4xl px-6 py-16">
-      <Link href="/" className="text-sm text-adressa-green">← Retour</Link>
-      <h1 className="mt-4 text-3xl font-black text-adressa-deep">ADRESSA pour les entreprises</h1>
-      <p className="mt-4 text-adressa-ink/70">
-        Une adresse fiable, vérifiée et géolocalisée pour chaque client, connectée à votre système via l&apos;API
-        ADRESSA.
-      </p>
-      <div className="mt-8 grid gap-4 sm:grid-cols-2">
-        {usages.map((u) => (
-          <div key={u} className="card">
-            <h3 className="font-semibold text-adressa-deep">{u}</h3>
+    <main className="min-h-screen bg-adressa-gray">
+      <SiteHeader />
+
+      {/* Hero */}
+      <section className="bg-adressa-deep px-6 py-20 text-white">
+        <div className="mx-auto max-w-4xl text-center">
+          <h1 className="text-3xl font-black leading-tight md:text-5xl">
+            L&apos;API d&apos;adressage qui connecte votre entreprise à chaque foyer sénégalais.
+          </h1>
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-white/80">
+            Intégrez des adresses précises, vérifiées et géolocalisées dans vos applications pour éliminer les
+            échecs de livraison, accélérer le KYC et optimiser vos opérations.
+          </p>
+          <div className="mt-8 flex justify-center">
+            <EntreprisesHero />
           </div>
-        ))}
-      </div>
+        </div>
+      </section>
+
+      {/* Secteurs + JSON viewer */}
+      <section id="apercu-api" className="mx-auto max-w-6xl px-6 py-16">
+        <div className="mb-8 text-center">
+          <h2 className="text-2xl font-bold text-adressa-deep">Une solution par secteur</h2>
+          <p className="mt-2 text-adressa-ink/60">
+            Cliquez sur un secteur pour voir un aperçu de la réponse API correspondante.
+          </p>
+        </div>
+        <SectorExplorer />
+      </section>
+
+      {/* Calculateur ROI */}
+      <section className="mx-auto max-w-2xl px-6 py-16">
+        <RoiCalculator />
+      </section>
+
+      {/* CTA final */}
+      <section className="bg-white px-6 py-16 text-center">
+        <h2 className="text-2xl font-bold text-adressa-deep">Prêt à intégrer ADRESSA ?</h2>
+        <p className="mx-auto mt-3 max-w-xl text-adressa-ink/70">
+          Décrivez-nous votre besoin, notre équipe vous accompagne dans la mise en place de votre accès API.
+        </p>
+        <div className="mt-6 flex justify-center">
+          <EntreprisesHero />
+        </div>
+      </section>
     </main>
   );
 }
