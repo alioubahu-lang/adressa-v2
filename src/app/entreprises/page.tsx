@@ -2,6 +2,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { EntreprisesHero } from "@/components/entreprises/EntreprisesHero";
 import { SectorExplorer } from "@/components/entreprises/SectorExplorer";
 import { RoiCalculator } from "@/components/entreprises/RoiCalculator";
+import { ContactFormSection } from "@/components/entreprises/ContactFormSection";
 
 export const metadata = {
   title: "Pour les entreprises — API ADRESSA",
@@ -46,14 +47,16 @@ export default function EntreprisesPage() {
         <RoiCalculator />
       </section>
 
-      {/* CTA final */}
-      <section className="bg-white px-6 py-16 text-center">
-        <h2 className="text-2xl font-bold text-adressa-deep">Prêt à intégrer ADRESSA ?</h2>
-        <p className="mx-auto mt-3 max-w-xl text-adressa-ink/70">
-          Décrivez-nous votre besoin, notre équipe vous accompagne dans la mise en place de votre accès API.
-        </p>
-        <div className="mt-6 flex justify-center">
-          <EntreprisesHero />
+      {/* CTA final avec formulaire de contact B2B */}
+      <section className="bg-white px-6 py-16">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-2xl font-bold text-adressa-deep">Prêt à intégrer ADRESSA ?</h2>
+          <p className="mx-auto mt-3 max-w-xl text-adressa-ink/70">
+            Décrivez-nous votre besoin, notre équipe vous accompagne dans la mise en place de votre accès API.
+          </p>
+        </div>
+        <div className="mt-8">
+          <ContactFormSection />
         </div>
       </section>
     </main>

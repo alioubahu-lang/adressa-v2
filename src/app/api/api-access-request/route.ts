@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 const requestSchema = z.object({
+  fullName: z.string().optional(),
   companyName: z.string().min(1),
   sector: z.string().min(1),
   email: z.string().email(),
-  monthlyVolume: z.string().min(1)
+  monthlyVolume: z.string().optional(),
+  message: z.string().optional()
 });
 
 // POST /api/api-access-request
