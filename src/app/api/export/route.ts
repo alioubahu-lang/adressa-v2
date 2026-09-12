@@ -29,9 +29,24 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const format = searchParams.get("format") === "geojson" ? "geojson" : "csv";
   const communeId = searchParams.get("communeId") ?? undefined;
+  const status = searchParams.get("status") ?? undefined;
+  const q = searchParams.get("q") ?? undefined;
+
+  const where = {
+    ...(communeId ? { communeId } : {}),
+    ...(status ? { status } : {}),
+    ...(q
+      ? {
+          OR: [
+            { adresssaId: { contains: q, mode: "insensitive" as const } },
+            { neighborhood: { name: { contains: q, mode: "insensitive" as const } } }
+          ]
+        }
+      : {})
+  };
 
   const addresses: ExportAddress[] = await prisma.address.findMany({
-    where: communeId ? { communeId } : undefined,
+    where,
     include: { commune: true, neighborhood: true, street: true },
     orderBy: { createdAt: "desc" }
   });
