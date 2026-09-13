@@ -7,6 +7,7 @@ export type Sector = {
   Icon: LucideIcon;
   problem: string;
   solution: string;
+  impact: string;
   method: "GET" | "POST";
   endpoint: string;
   jsonResponse: Record<string, unknown>;
@@ -17,8 +18,11 @@ export const sectors: Sector[] = [
     id: "livraison",
     title: "Livraison & Logistique",
     Icon: Truck,
-    problem: "Appels répétés, livreurs perdus, retards.",
-    solution: "Géocodage précis au point d'entrée + repères visuels (photo/description).",
+    problem:
+      "Plusieurs appels au client et des tours dans le quartier sont souvent nécessaires pour trouver le point de dépôt.",
+    solution:
+      "Chaque client reçoit un identifiant relié à un point GPS vérifié sur le terrain — le livreur va directement à l'entrée.",
+    impact: "Jusqu'à -80% d'appels livreurs (bénéfice visé)",
     method: "GET",
     endpoint: "/api/v1/address/{adressa_id}/navigation",
     jsonResponse: {
@@ -40,8 +44,9 @@ export const sectors: Sector[] = [
     id: "ecommerce",
     title: "E-commerce & Webmasters",
     Icon: ShoppingCart,
-    problem: "Abandon de panier au moment de la saisie d'adresse textuelle floue.",
-    solution: "Widget Checkout avec autocomplétion par code ADRESSA.",
+    problem: "Une adresse tapée approximativement au moment de payer pousse souvent le client à abandonner son panier.",
+    solution: "Un champ « identifiant ADRESSA » validé instantanément à la commande, relié à une position exacte.",
+    impact: "Moins d'abandons de panier liés à l'adresse (bénéfice visé)",
     method: "POST",
     endpoint: "/api/v1/checkout/validate",
     jsonResponse: {
@@ -58,8 +63,9 @@ export const sectors: Sector[] = [
     id: "transport",
     title: "Transport & VTC",
     Icon: Car,
-    problem: "Points de prise en charge imprécis pour les chauffeurs.",
-    solution: "Conversion d'identifiant en coordonnées GPS de ramassage.",
+    problem: "Le chauffeur perd du temps à chercher le point de prise en charge exact.",
+    solution: "Le client partage son identifiant ADRESSA, le chauffeur est guidé directement au bon point.",
+    impact: "Attente réduite avant prise en charge (bénéfice visé)",
     method: "GET",
     endpoint: "/api/v1/pickup/location",
     jsonResponse: {
@@ -75,8 +81,9 @@ export const sectors: Sector[] = [
     id: "immobilier",
     title: "Immobilier & BTP",
     Icon: Building2,
-    problem: "Difficulté d'identification et de traçabilité des biens fonciers.",
-    solution: "Fiche foncière numérique liée aux références cadastrales.",
+    problem: "Les biens fonciers sont difficiles à identifier et à suivre dans le temps.",
+    solution: "Chaque bien reçoit une fiche numérique permanente liée à sa localisation précise.",
+    impact: "Traçabilité complète du bien, du premier jour à la revente",
     method: "GET",
     endpoint: "/api/v1/real-estate/property",
     jsonResponse: {
@@ -95,8 +102,9 @@ export const sectors: Sector[] = [
     id: "banques",
     title: "Banques & Fintechs",
     Icon: Landmark,
-    problem: "Processus KYC longs pour vérifier l'adresse physique des clients.",
-    solution: "Vérification d'adresse certifiée pour la conformité réglementaire.",
+    problem: "Vérifier l'adresse physique d'un client (KYC) prend du temps et repose sur des justificatifs incertains.",
+    solution: "Une adresse ADRESSA vérifiée sur le terrain sert de preuve de résidence immédiatement consultable.",
+    impact: "Vérification en minutes plutôt qu'en jours (bénéfice visé)",
     method: "POST",
     endpoint: "/api/v1/kyc/verify-address",
     jsonResponse: {
@@ -114,8 +122,9 @@ export const sectors: Sector[] = [
     id: "assurances",
     title: "Assurances",
     Icon: ShieldCheck,
-    problem: "Difficulté d'évaluation des risques locaux et lenteur d'intervention.",
-    solution: "Géolocalisation des souscriptions et gestion des sinistres par zone.",
+    problem: "Un sinistre mal localisé ralentit l'évaluation du risque et l'intervention.",
+    solution: "Chaque souscription est géolocalisée précisément, pour un ciblage par zone et une intervention plus rapide.",
+    impact: "Traitement des sinistres géolocalisés accéléré (bénéfice visé)",
     method: "GET",
     endpoint: "/api/v1/insurance/risk-zone",
     jsonResponse: {
@@ -133,8 +142,9 @@ export const sectors: Sector[] = [
     id: "telecom",
     title: "Télécommunications & Énergie",
     Icon: Wifi,
-    problem: "Interventions techniciens échouées faute de localisation exacte.",
-    solution: "Vérification d'éligibilité technique et accès bâtiment.",
+    problem: "Un technicien envoyé « dans le quartier » repart parfois sans avoir trouvé le bon domicile.",
+    solution: "L'adresse ADRESSA inclut le point d'entrée exact et les consignes d'accès transmis au technicien.",
+    impact: "Moins d'interventions techniciens infructueuses (bénéfice visé)",
     method: "GET",
     endpoint: "/api/v1/telecom/eligibility",
     jsonResponse: {
@@ -151,8 +161,9 @@ export const sectors: Sector[] = [
     id: "services",
     title: "Services à Domicile",
     Icon: Wrench,
-    problem: "Retards des artisans/prestataires et consignes d'accès perdues.",
-    solution: "Ordre de mission avec consignes d'accès détaillées (digicode, étage).",
+    problem: "Un artisan ou prestataire arrive en retard, ou ne trouve pas le bon logement.",
+    solution: "L'ordre de mission intègre l'identifiant ADRESSA avec les consignes d'accès (digicode, étage, portail).",
+    impact: "Ponctualité des interventions améliorée (bénéfice visé)",
     method: "GET",
     endpoint: "/api/v1/services/dispatch",
     jsonResponse: {

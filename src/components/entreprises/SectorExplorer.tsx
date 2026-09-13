@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { sectors } from "./sectorsData";
-import { ApiJsonViewer } from "./ApiJsonViewer";
+import { OperationalImpactPanel } from "./OperationalImpactPanel";
 
 export function SectorExplorer() {
   const [selectedId, setSelectedId] = useState(sectors[0].id);
@@ -31,17 +31,14 @@ export function SectorExplorer() {
               />
               <h3 className="text-sm font-bold text-adressa-deep">{sector.title}</h3>
               <p className="text-xs text-adressa-ink/60">{sector.problem}</p>
-              <p className="text-xs font-medium text-adressa-green">→ {sector.solution}</p>
+              <p className="text-xs font-semibold text-adressa-green">{sector.impact}</p>
             </button>
           );
         })}
       </div>
 
       <div className="lg:col-span-2 lg:sticky lg:top-24 lg:self-start">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-adressa-ink/50">
-          Aperçu — {selected.title}
-        </p>
-        <ApiJsonViewer sector={selected} />
+        <OperationalImpactPanel sector={selected} />
       </div>
     </div>
   );

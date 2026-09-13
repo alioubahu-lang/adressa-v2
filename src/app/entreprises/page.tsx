@@ -19,11 +19,11 @@ export default function EntreprisesPage() {
       <section className="bg-adressa-deep px-6 py-20 text-white">
         <div className="mx-auto max-w-4xl text-center">
           <h1 className="text-3xl font-black leading-tight md:text-5xl">
-            L&apos;API d&apos;adressage qui connecte votre entreprise à chaque foyer sénégalais.
+            Transformez vos adresses en avantage concurrentiel.
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-white/80">
-            Intégrez des adresses précises, vérifiées et géolocalisées dans vos applications pour éliminer les
-            échecs de livraison, accélérer le KYC et optimiser vos opérations.
+            ADRESSA élimine les échecs de livraison, accélère vos vérifications clients et fait gagner un temps
+            précieux à vos équipes terrain — sans aucune compétence technique requise.
           </p>
           <div className="mt-8 flex justify-center">
             <EntreprisesHero />
@@ -31,19 +31,19 @@ export default function EntreprisesPage() {
         </div>
       </section>
 
-      {/* Secteurs + JSON viewer */}
-      <section id="apercu-api" className="mx-auto max-w-6xl px-6 py-16">
+      {/* Secteurs + panneau impact opérationnel */}
+      <section id="secteurs" className="mx-auto max-w-6xl px-6 py-16">
         <div className="mb-8 text-center">
           <h2 className="text-2xl font-bold text-adressa-deep">Une solution par secteur</h2>
           <p className="mt-2 text-adressa-ink/60">
-            Cliquez sur un secteur pour voir un aperçu de la réponse API correspondante.
+            Cliquez sur un secteur pour voir l&apos;impact opérationnel correspondant.
           </p>
         </div>
         <SectorExplorer />
       </section>
 
-      {/* Calculateur ROI */}
-      <section className="mx-auto max-w-2xl px-6 py-16">
+      {/* Calculateur d'impact */}
+      <section id="calculateur-impact" className="mx-auto max-w-2xl px-6 py-16 scroll-mt-20">
         <RoiCalculator />
       </section>
 
@@ -59,6 +59,15 @@ export default function EntreprisesPage() {
           <ContactFormSection />
         </div>
       </section>
+
+      <div className="bg-white pb-10 text-center">
+        <p className="text-xs text-adressa-ink/40">
+          Vous êtes développeur ou intégrateur technique ?{" "}
+          <a href="#secteurs" className="underline hover:text-adressa-ink/70">
+            Consulter la documentation API
+          </a>
+        </p>
+      </div>
     </main>
   );
 }
