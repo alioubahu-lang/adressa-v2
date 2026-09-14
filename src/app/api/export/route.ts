@@ -32,21 +32,19 @@ export async function GET(req: NextRequest) {
   const status = searchParams.get("status") ?? undefined;
   const q = searchParams.get("q") ?? undefined;
 
-  const where = {
-    ...(communeId ? { communeId } : {}),
-    ...(status ? { status } : {}),
-    ...(q
-      ? {
-          OR: [
-            { adresssaId: { contains: q, mode: "insensitive" as const } },
-            { neighborhood: { name: { contains: q, mode: "insensitive" as const } } }
-          ]
-        }
-      : {})
-  };
-
   const addresses: ExportAddress[] = await prisma.address.findMany({
-    where,
+    where: {
+      ...(communeId ? { communeId } : {}),
+      ...(status ? { status } : {}),
+      ...(q
+        ? {
+            OR: [
+              { adresssaId: { contains: q, mode: "insensitive" as const } },
+              { neighborhood: { name: { contains: q, mode: "insensitive" as const } } }
+            ]
+          }
+        : {})
+    },
     include: { commune: true, neighborhood: true, street: true },
     orderBy: { createdAt: "desc" }
   });

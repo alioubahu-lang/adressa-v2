@@ -50,7 +50,18 @@ export default async function DashboardAddressesPage({ searchParams }: { searchP
 
   const [addresses, totalCount, communes]: [AddressRow[], number, { id: string; name: string }[]] = await Promise.all([
     prisma.address.findMany({
-      where,
+      where: {
+        ...(communeId ? { communeId } : {}),
+        ...(status ? { status } : {}),
+        ...(q
+          ? {
+              OR: [
+                { adresssaId: { contains: q, mode: "insensitive" as const } },
+                { neighborhood: { name: { contains: q, mode: "insensitive" as const } } }
+              ]
+            }
+          : {})
+      },
       include: { commune: true, neighborhood: true, street: true },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * PAGE_SIZE,
