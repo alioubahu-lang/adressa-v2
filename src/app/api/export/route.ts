@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
   const addresses: ExportAddress[] = await prisma.address.findMany({
     where: {
       ...(communeId ? { communeId } : {}),
-      ...(status ? { status } : {}),
+      ...(status ? { status: status as any } : {}),
       ...(q
         ? {
             OR: [
