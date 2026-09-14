@@ -37,7 +37,7 @@ export default async function DashboardAddressesPage({ searchParams }: { searchP
 
   const where = {
     ...(communeId ? { communeId } : {}),
-    ...(status ? { status } : {}),
+    ...(status ? { status: status as any } : {}),
     ...(q
       ? {
           OR: [
@@ -52,7 +52,7 @@ export default async function DashboardAddressesPage({ searchParams }: { searchP
     prisma.address.findMany({
       where: {
         ...(communeId ? { communeId } : {}),
-        ...(status ? { status } : {}),
+        ...(status ? { status: status as any } : {}),
         ...(q
           ? {
               OR: [
