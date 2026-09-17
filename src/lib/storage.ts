@@ -12,14 +12,14 @@ import sharp from "sharp";
  * Important pour l'Afrique : on compresse systématiquement l'image avant upload
  * (redimensionnement + conversion WebP) pour rester léger sur les connexions lentes.
  */
-export async function uploadAddressPhoto(file: Buffer, adresssaId: string): Promise<string> {
+export async function uploadImage(file: Buffer, folder: string, key: string): Promise<string> {
   const compressed = await sharp(file)
     .rotate() // corrige l'orientation EXIF (photos prises au téléphone)
     .resize({ width: 1600, withoutEnlargement: true })
     .webp({ quality: 75 })
     .toBuffer();
 
-  const filename = `addresses/${adresssaId}/${Date.now()}.webp`;
+  const filename = `${folder}/${key}/${Date.now()}.webp`;
 
   const blob = await put(filename, compressed, {
     access: "public",
@@ -28,6 +28,14 @@ export async function uploadAddressPhoto(file: Buffer, adresssaId: string): Prom
   });
 
   return blob.url;
+}
+
+export async function uploadAddressPhoto(file: Buffer, adresssaId: string): Promise<string> {
+  return uploadImage(file, "addresses", adresssaId);
+}
+
+export async function uploadCommuneLogo(file: Buffer, communeId: string): Promise<string> {
+  return uploadImage(file, "communes", communeId);
 }
 
 export const MAX_PHOTO_SIZE_BYTES = 8 * 1024 * 1024; // 8 Mo avant compression

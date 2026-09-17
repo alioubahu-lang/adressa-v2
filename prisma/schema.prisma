@@ -16,7 +16,16 @@ enum Role {
   ADMIN
   AGENT
   MUNICIPAL
+  MUNICIPAL_ADMIN
+  LOGISTICS_PARTNER
   VIEWER
+}
+
+enum TaxStatus {
+  NON_RENSEIGNE
+  IMPOSE
+  EXONERE
+  IMPAYE
 }
 
 enum AddressStatus {
@@ -33,13 +42,16 @@ model User {
   email        String   @unique
   passwordHash String
   role         Role     @default(AGENT)
+  communeId    String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  commune          Commune?         @relation(fields: [communeId], references: [id])
   addressesCreated Address[]        @relation("AddressCreatedBy")
   addressesUpdated Address[]        @relation("AddressUpdatedBy")
   historyEntries   AddressHistory[]
 
+  @@index([communeId])
   @@map("users")
 }
 
@@ -78,13 +90,17 @@ model Department {
 }
 
 model Commune {
-  id           String         @id @default(cuid())
-  departmentId String
-  name         String
-  code         String? // ex: SBK — utilisé pour générer les IDs ADRESSA
-  department   Department     @relation(fields: [departmentId], references: [id])
+  id            String         @id @default(cuid())
+  departmentId  String
+  name          String
+  code          String? // ex: SBK — utilisé pour générer les IDs ADRESSA
+  logoUrl       String?
+  contactEmail  String?
+  contactPhone  String?
+  department    Department     @relation(fields: [departmentId], references: [id])
   neighborhoods Neighborhood[]
-  addresses    Address[]
+  addresses     Address[]
+  users         User[]
 
   @@index([departmentId])
   @@map("communes")
@@ -133,6 +149,7 @@ model Address {
   description      String?
   photoUrl         String?
   buildingType     String? // ex: "Maison individuelle" — renseigné au cas par cas, jamais déduit
+  taxStatus        TaxStatus     @default(NON_RENSEIGNE)
   status           AddressStatus @default(BROUILLON)
   verified         Boolean       @default(false)
   createdById      String?
