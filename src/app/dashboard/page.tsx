@@ -1,6 +1,10 @@
 import nextDynamic from "next/dynamic";
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
 import { MapPin, CheckCircle2, Clock, Building2, QrCode, ScanLine } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { authOptions } from "@/lib/auth";
+import { getDefaultDashboardView } from "@/lib/permissions";
 import { KpiCard } from "@/components/dashboard/KpiCard";
 import { QuickActionsBar } from "@/components/dashboard/QuickActionsBar";
 import { ActivityChart, type DailyPoint } from "@/components/dashboard/ActivityChart";
@@ -128,6 +132,17 @@ async function getDashboardData() {
 }
 
 export default async function DashboardOverviewPage() {
+  const session = await getServerSession(authOptions);
+  const role = (session?.user as any)?.role;
+
+  // Un Municipal_Admin ou un Logistics_Partner est redirigé vers sa vue dédiée.
+  // Le SUPER_ADMIN reste sur la vue opérationnelle complète par défaut.
+  if (role !== "SUPER_ADMIN") {
+    const defaultView = getDefaultDashboardView(role);
+    if (defaultView === "municipal") redirect("/dashboard/fiscal");
+    if (defaultView === "logistics") redirect("/dashboard/logistics");
+  }
+
   const stats = await getDashboardData();
   const verifiedPct = stats.total > 0 ? Math.round((stats.verified / stats.total) * 100) : 0;
 

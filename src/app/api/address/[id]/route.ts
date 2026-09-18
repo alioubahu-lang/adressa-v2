@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { authOptions, canDeleteAddress, canEditAddress } from "@/lib/auth";
+import { hasPermission, type Role } from "@/lib/permissions";
 
 // GET /api/address/SN-SBK-001
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
@@ -20,8 +21,16 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 // PUT /api/address/SN-SBK-001
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as any)?.role;
-  if (!canEditAddress(role)) {
+  const role = (session?.user as any)?.role as Role | undefined;
+
+  const body = await req.json();
+
+  // Un titulaire de fiscal:edit (ex: MUNICIPAL_ADMIN) sans droit d'édition général
+  // ne peut modifier QUE le statut fiscal — jamais les autres champs de l'adresse.
+  const isFiscalOnlyUpdate = Object.keys(body).every((k) => k === "taxStatus");
+  const authorized = canEditAddress(role) || (isFiscalOnlyUpdate && hasPermission(role, "fiscal:edit"));
+
+  if (!authorized) {
     return NextResponse.json({ error: "Non autorisé." }, { status: 403 });
   }
 
@@ -30,7 +39,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ error: "Adresse introuvable." }, { status: 404 });
   }
 
-  const body = await req.json();
   const userId = (session?.user as any)?.id as string | undefined;
 
   // Champs modifiables — on ignore volontairement adresssaId (jamais modifiable après création)
@@ -47,7 +55,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     "verified",
     "streetId",
     "buildingNumber",
-    "buildingType"
+    "buildingType",
+    "taxStatus"
   ] as const;
 
   const data: Record<string, unknown> = {};
