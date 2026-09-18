@@ -12,7 +12,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="flex min-h-screen bg-adressa-gray">
-      <Sidebar />
+      <Sidebar role={(session.user as any)?.role} />
       <div className="flex-1">
         <header className="flex items-center justify-between border-b border-black/5 bg-white px-6 py-4">
           <span className="font-semibold text-adressa-deep">Dashboard administrateur</span>
