@@ -10,14 +10,25 @@ const options = [
   { value: "IMPAYE", label: "Impayé" }
 ];
 
-const colors: Record<string, string> = {
-  NON_RENSEIGNE: "text-adressa-ink/50",
-  IMPOSE: "text-green-700",
-  EXONERE: "text-sky-700",
-  IMPAYE: "text-red-700"
+// Badges colorés alignés avec la colonne "Statut adresse" : fond + texte, pas juste le texte.
+const styles: Record<string, string> = {
+  NON_RENSEIGNE: "bg-amber-50 text-amber-800 border-2 border-amber-300 ring-1 ring-amber-200",
+  IMPOSE: "bg-green-100 text-green-700 border border-green-200",
+  EXONERE: "bg-sky-100 text-sky-700 border border-sky-200",
+  IMPAYE: "bg-red-100 text-red-700 border border-red-200"
 };
 
-export function TaxStatusSelect({ adresssaId, initialValue }: { adresssaId: string; initialValue: string }) {
+export type TaxStatusMeta = { lastModifiedAt: string | null; lastModifiedBy: string | null };
+
+export function TaxStatusSelect({
+  adresssaId,
+  initialValue,
+  meta
+}: {
+  adresssaId: string;
+  initialValue: string;
+  meta?: TaxStatusMeta;
+}) {
   const router = useRouter();
   const [value, setValue] = useState(initialValue);
   const [saving, setSaving] = useState(false);
@@ -34,12 +45,18 @@ export function TaxStatusSelect({ adresssaId, initialValue }: { adresssaId: stri
     if (res.ok) router.refresh();
   }
 
+  const tooltip =
+    meta?.lastModifiedAt && meta?.lastModifiedBy
+      ? `Modifié le ${new Date(meta.lastModifiedAt).toLocaleDateString("fr-FR")} par ${meta.lastModifiedBy}`
+      : "Pas encore modifié";
+
   return (
     <select
       value={value}
       onChange={(e) => handleChange(e.target.value)}
       disabled={saving}
-      className={`rounded-lg border border-black/10 bg-white px-2 py-1 text-xs font-semibold ${colors[value] ?? ""}`}
+      title={tooltip}
+      className={`rounded-lg px-2 py-1 text-xs font-semibold transition ${styles[value] ?? ""}`}
     >
       {options.map((o) => (
         <option key={o.value} value={o.value}>

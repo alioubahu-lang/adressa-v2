@@ -1,29 +1,30 @@
 import { Building2, CheckCircle2, TrendingUp } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { KpiCard } from "@/components/dashboard/KpiCard";
-import { StatusBadge } from "@/components/dashboard/StatusBadge";
-import { TaxStatusSelect } from "@/components/dashboard/TaxStatusSelect";
+import { FiscalTable, type FiscalRow } from "@/components/dashboard/FiscalTable";
 
 export const dynamic = "force-dynamic";
 
-type FiscalAddressRow = {
+type AddressWithTaxHistory = {
   id: string;
   adresssaId: string;
   status: string;
   taxStatus: string;
   neighborhood: { name: string };
   commune: { name: string };
+  history: { createdAt: Date; user: { name: string } | null }[];
 };
 
 export default async function FiscalDashboardPage() {
-  const [total, verified, activeQr, imposees, impayees, exonerees, addresses]: [
+  const [total, verified, activeQr, imposees, impayees, exonerees, nonRenseignees, addresses]: [
     number,
     number,
     number,
     number,
     number,
     number,
-    FiscalAddressRow[]
+    number,
+    AddressWithTaxHistory[]
   ] = await Promise.all([
     prisma.address.count(),
     prisma.address.count({ where: { verified: true } }),
@@ -31,8 +32,18 @@ export default async function FiscalDashboardPage() {
     prisma.address.count({ where: { taxStatus: "IMPOSE" } }),
     prisma.address.count({ where: { taxStatus: "IMPAYE" } }),
     prisma.address.count({ where: { taxStatus: "EXONERE" } }),
+    prisma.address.count({ where: { taxStatus: "NON_RENSEIGNE" } }),
     prisma.address.findMany({
-      include: { commune: true, neighborhood: true },
+      include: {
+        commune: true,
+        neighborhood: true,
+        history: {
+          where: { action: "MODIFICATION_TAXSTATUS" },
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          include: { user: { select: { name: true } } }
+        }
+      },
       orderBy: { createdAt: "desc" },
       take: 50
     })
@@ -41,9 +52,22 @@ export default async function FiscalDashboardPage() {
   const coverageRate = total > 0 ? Math.round((verified / total) * 100) : 0;
   const plaquesRate = total > 0 ? Math.round((activeQr / total) * 100) : 0;
 
+  const rows: FiscalRow[] = addresses.map((a) => ({
+    id: a.id,
+    adresssaId: a.adresssaId,
+    status: a.status,
+    taxStatus: a.taxStatus,
+    neighborhood: a.neighborhood,
+    commune: a.commune,
+    taxMeta: {
+      lastModifiedAt: a.history[0]?.createdAt.toISOString() ?? null,
+      lastModifiedBy: a.history[0]?.user?.name ?? null
+    }
+  }));
+
   return (
     <div>
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-adressa-deep">Vue municipale — Sébikotane</h1>
           <p className="text-sm text-adressa-ink/60">
@@ -60,65 +84,51 @@ export default async function FiscalDashboardPage() {
         </div>
       </div>
 
-      <div className="mb-6" />
-
+      {/* Groupe 1 — Métriques globales */}
+      <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-adressa-ink/50">Métriques globales</h2>
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
         <KpiCard label="Bâtiments enregistrés" value={total} Icon={Building2} />
         <KpiCard label="Taux de couverture vérifiée" value={`${coverageRate}%`} Icon={CheckCircle2} tone="green" />
         <KpiCard label="Avancement pose des plaques" value={`${plaquesRate}%`} Icon={TrendingUp} />
       </div>
 
-      <div className="mt-6 grid grid-cols-3 gap-4">
+      {/* Groupe 2 — Métriques fiscales */}
+      <h2 className="mb-2 mt-6 text-xs font-semibold uppercase tracking-wide text-adressa-ink/50">Métriques fiscales</h2>
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <div className="card text-center">
-          <div className="text-2xl font-black text-green-700">{imposees}</div>
+          <div className="text-2xl font-black text-green-700">
+            {imposees} <span className="text-base font-medium text-adressa-ink/40">/ {total}</span>
+          </div>
           <div className="mt-1 text-xs text-adressa-ink/60">Imposées</div>
         </div>
         <div className="card text-center">
-          <div className="text-2xl font-black text-red-700">{impayees}</div>
+          <div className="text-2xl font-black text-red-700">
+            {impayees} <span className="text-base font-medium text-adressa-ink/40">/ {total}</span>
+          </div>
           <div className="mt-1 text-xs text-adressa-ink/60">Impayées</div>
         </div>
         <div className="card text-center">
-          <div className="text-2xl font-black text-sky-700">{exonerees}</div>
+          <div className="text-2xl font-black text-sky-700">
+            {exonerees} <span className="text-base font-medium text-adressa-ink/40">/ {total}</span>
+          </div>
           <div className="mt-1 text-xs text-adressa-ink/60">Exonérées</div>
         </div>
-      </div>
-
-      <div className="card mt-6 overflow-x-auto p-0">
-        <div className="border-b border-black/5 p-4">
-          <h2 className="text-sm font-bold text-adressa-deep">Recouvrement par adresse</h2>
+        <div className="card text-center">
+          <div className="text-2xl font-black text-amber-700">
+            {nonRenseignees} <span className="text-base font-medium text-adressa-ink/40">/ {total}</span>
+          </div>
+          <div className="mt-1 text-xs text-adressa-ink/60">Non renseignées</div>
+          {nonRenseignees > 0 && (
+            <span className="mt-2 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-800">
+              À renseigner
+            </span>
+          )}
         </div>
-        <table className="w-full text-left text-sm">
-          <thead className="bg-adressa-light text-adressa-deep">
-            <tr>
-              <th className="px-4 py-3">ID ADRESSA</th>
-              <th className="px-4 py-3">Commune</th>
-              <th className="px-4 py-3">Quartier</th>
-              <th className="px-4 py-3">Statut adresse</th>
-              <th className="px-4 py-3">Statut fiscal</th>
-            </tr>
-          </thead>
-          <tbody>
-            {addresses.map((a) => (
-              <tr key={a.id} className="border-t border-black/5">
-                <td className="whitespace-nowrap px-4 py-3 font-semibold text-adressa-green">{a.adresssaId}</td>
-                <td className="px-4 py-3">{a.commune.name}</td>
-                <td className="px-4 py-3">{a.neighborhood.name}</td>
-                <td className="px-4 py-3">
-                  <StatusBadge status={a.status} />
-                </td>
-                <td className="px-4 py-3">
-                  <TaxStatusSelect adresssaId={a.adresssaId} initialValue={a.taxStatus} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
 
-      <p className="mt-4 text-xs text-adressa-ink/40">
-        Le statut fiscal est renseigné manuellement par les services municipaux — ADRESSA n&apos;a pas accès à
-        votre système de recouvrement et n&apos;émet aucun avis d&apos;imposition.
-      </p>
+      <div className="mt-6">
+        <FiscalTable rows={rows} />
+      </div>
     </div>
   );
 }
