@@ -18,7 +18,8 @@ export function AddressExperienceMockup() {
             className="h-full w-full object-cover"
           />
           <div className="absolute left-[58.7%] top-[44.1%] z-10 aspect-square w-[7.8%] bg-white p-[0.15%] shadow-sm" aria-label="QR code fonctionnel pour SN-SBK-001">
-            <Image src="/api/qr/SN-SBK-001?format=png" alt="" aria-hidden="true" width={512} height={512} unoptimized className="h-full w-full object-contain p-1" />
+            {/* eslint-disable-next-line @next/next/no-img-element -- L’API génère le QR dynamique de démonstration. */}
+            <img src="/api/qr/SN-SBK-001?format=png" alt="" aria-hidden="true" className="h-full w-full object-contain p-1" />
           </div>
           <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-black/65 via-black/20 to-transparent p-4 pt-14 sm:p-5 sm:pt-16">
             <div className="text-white drop-shadow-sm">
