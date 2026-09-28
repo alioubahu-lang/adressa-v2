@@ -4,7 +4,7 @@ import { ArrowUpRight, BadgeCheck, Building2, MapPin, Navigation, PackageCheck, 
 
 function DecorativeQr() {
   return (
-    <Image src="/api/qr/SN-SBK-001?format=png" alt="QR code de l’adresse SN-SBK-001" width={128} height={128} unoptimized className="size-12 shrink-0 border-2 border-white bg-white p-0.5 sm:size-[58px]" />
+    <Image src="/images/qr-sn-sbk-001.png" alt="QR code de l’adresse SN-SBK-001" width={128} height={128} priority className="size-12 shrink-0 border-2 border-white bg-white p-0.5 sm:size-[58px]" />
   );
 }
 
