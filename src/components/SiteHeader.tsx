@@ -17,10 +17,16 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-20 border-b border-black/5 bg-white/80 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" className="flex items-center gap-2">
-          <Image src="/logo-icon-512.png" alt="ADRESSA" width={36} height={36} className="rounded-lg" />
-          <span className="text-xl font-black tracking-widest text-adressa-deep">ADRESSA</span>
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-2">
+        <Link href="/" aria-label="ADRESSA — Accueil" className="flex shrink-0 items-center">
+          <Image
+            src="/logo-full.png"
+            alt="ADRESSA — Adressage numérique et physique pour l’Afrique"
+            width={2048}
+            height={683}
+            priority
+            className="h-12 w-auto object-contain sm:h-14"
+          />
         </Link>
 
         <nav className="hidden gap-6 text-sm font-medium text-adressa-ink/70 md:flex">
