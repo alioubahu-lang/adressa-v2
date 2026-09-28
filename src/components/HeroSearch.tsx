@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { ArrowRight, Search } from "lucide-react";
 
 type Result = {
   adresssaId: string;
@@ -16,6 +17,13 @@ export function HeroSearch() {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  function startDemo() {
+    setQuery("SN-SBK-001");
+    setOpen(true);
+    inputRef.current?.focus();
+  }
 
   useEffect(() => {
     if (!query.trim()) {
@@ -47,24 +55,34 @@ export function HeroSearch() {
   }, []);
 
   return (
-    <div ref={boxRef} className="relative mx-auto mt-10 w-full max-w-xl text-left">
-      <div className="flex items-center gap-2 rounded-2xl bg-white p-2 shadow-xl">
-        <span className="pl-3 text-adressa-ink/40">🔎</span>
+    <div ref={boxRef} className="relative mt-8 w-full max-w-xl text-left">
+      <div className="flex items-center gap-2 rounded-2xl border border-white/70 bg-white p-2 shadow-[0_24px_60px_-24px_rgba(2,22,14,0.7)] ring-1 ring-black/5">
+        <Search aria-hidden="true" className="ml-3 shrink-0 text-adressa-green" size={20} />
         <input
-          autoFocus
+          ref={inputRef}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query && setOpen(true)}
+          aria-label="Rechercher une adresse ADRESSA"
           placeholder="Entrez un identifiant : SN-SBK-001, Sébikotane, Dogar…"
-          className="flex-1 bg-transparent px-1 py-3 text-adressa-ink placeholder:text-adressa-ink/40 focus:outline-none"
+          className="min-w-0 flex-1 bg-transparent px-1 py-3 text-sm text-adressa-ink placeholder:text-adressa-ink/40 focus:outline-none sm:text-base"
         />
         <Link
           href={query.trim() ? `/search?q=${encodeURIComponent(query.trim())}` : "/search"}
-          className="rounded-xl bg-adressa-deep px-5 py-3 text-sm font-semibold text-white hover:bg-adressa-green"
+          className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-xl bg-adressa-deep px-4 py-3 text-sm font-semibold text-white transition hover:bg-adressa-green sm:px-5"
         >
-          Localiser
+          <span className="hidden sm:inline">Localiser</span><ArrowRight size={17} aria-hidden="true" />
         </Link>
       </div>
+
+      <button
+        type="button"
+        onClick={startDemo}
+        className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 text-sm font-medium text-white/90 transition hover:border-white/40 hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+      >
+        <span className="size-1.5 rounded-full bg-emerald-300" aria-hidden="true" />
+        Essayer la démo · <span className="font-mono text-white">SN-SBK-001</span>
+      </button>
 
       {open && (
         <div className="absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-2xl bg-white text-left shadow-2xl">
