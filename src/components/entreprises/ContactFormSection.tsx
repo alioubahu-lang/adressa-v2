@@ -9,7 +9,7 @@ export function ContactFormSection() {
   const [email, setEmail] = useState("");
   const [sector, setSector] = useState(sectors[0].title);
   const [message, setMessage] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error" | "unavailable">("idle");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -20,7 +20,7 @@ export function ContactFormSection() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fullName, companyName, email, sector, message })
       });
-      setStatus(res.ok ? "success" : "error");
+      setStatus(res.ok ? "success" : res.status === 503 ? "unavailable" : "error");
     } catch {
       setStatus("error");
     }
@@ -100,6 +100,11 @@ export function ContactFormSection() {
       </div>
 
       {status === "error" && <p className="mt-3 text-sm text-red-600">Une erreur est survenue, réessayez.</p>}
+      {status === "unavailable" && (
+        <p role="alert" className="mt-3 text-sm text-amber-800">
+          Ce formulaire n&apos;est pas encore activé. Votre demande n&apos;a pas été transmise.
+        </p>
+      )}
 
       <button type="submit" disabled={status === "loading"} className="btn-primary mt-6 w-full">
         {status === "loading" ? "Envoi…" : "Envoyer ma demande d'accès API"}

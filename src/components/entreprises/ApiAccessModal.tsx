@@ -9,7 +9,7 @@ export function ApiAccessModal({ open, onClose }: { open: boolean; onClose: () =
   const [sector, setSector] = useState(sectors[0].title);
   const [email, setEmail] = useState("");
   const [monthlyVolume, setMonthlyVolume] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error" | "unavailable">("idle");
 
   if (!open) return null;
 
@@ -22,7 +22,7 @@ export function ApiAccessModal({ open, onClose }: { open: boolean; onClose: () =
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ companyName, sector, email, monthlyVolume })
       });
-      setStatus(res.ok ? "success" : "error");
+      setStatus(res.ok ? "success" : res.status === 503 ? "unavailable" : "error");
     } catch {
       setStatus("error");
     }
@@ -57,6 +57,13 @@ export function ApiAccessModal({ open, onClose }: { open: boolean; onClose: () =
             <p className="mt-1 text-sm text-adressa-ink/60">
               Un accès de test vous sera fourni après étude de votre demande.
             </p>
+
+            {status === "unavailable" && (
+              <p role="alert" className="mt-3 text-sm text-amber-800">
+                Ce formulaire n&apos;est pas encore activé. Votre demande n&apos;a pas été transmise.
+              </p>
+            )}
+            {status === "error" && <p role="alert" className="mt-3 text-sm text-red-600">Une erreur est survenue, réessayez.</p>}
 
             <div className="mt-5 space-y-4">
               <div>
