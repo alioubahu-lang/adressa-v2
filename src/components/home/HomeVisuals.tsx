@@ -1,19 +1,10 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowUpRight, BadgeCheck, Building2, MapPin, Navigation, PackageCheck, Route, ShieldCheck, Users } from "lucide-react";
-
-const qrRows = [
-  "111111101010111", "100000101110101", "101110100010111", "101110101011001", "101110100111101",
-  "100000101000101", "111111101010111", "000000001101000", "110101110011101", "011010011100010",
-  "101111101011011", "001001011100100", "111010111011110", "100111000101001", "110101101110111"
-];
 
 function DecorativeQr() {
   return (
-    <div aria-hidden="true" className="grid size-12 shrink-0 grid-cols-[repeat(15,minmax(0,1fr))] gap-px border-2 border-white bg-white p-0.5 sm:size-[58px]">
-      {qrRows.join("").split("").map((cell, index) => (
-        <span key={index} className={cell === "1" ? "bg-adressa-deep" : "bg-white"} />
-      ))}
-    </div>
+    <Image src="/api/qr/SN-SBK-001?format=png" alt="QR code de l’adresse SN-SBK-001" width={128} height={128} unoptimized className="size-12 shrink-0 border-2 border-white bg-white p-0.5 sm:size-[58px]" />
   );
 }
 
