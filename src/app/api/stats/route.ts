@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/stats — KPI pour le dashboard
 export async function GET() {
   const [total, verified, pending, communesCovered, activeQr, scans30d] = await Promise.all([
