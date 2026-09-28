@@ -10,7 +10,8 @@ const createAddressSchema = z.object({
   regionId: z.string().min(1),
   departmentId: z.string().min(1),
   communeId: z.string().min(1),
-  neighborhoodId: z.string().min(1),
+  neighborhoodId: z.string().min(1).optional(),
+  neighborhoodName: z.string().trim().min(1).max(120).optional(),
   streetId: z.string().optional().nullable(),
   buildingNumber: z.string().optional().nullable(),
   latitude: z.number().min(-90).max(90),
@@ -33,6 +34,9 @@ const createAddressSchema = z.object({
   gpsAccuracyMeters: z.number().min(0).max(100000).optional().nullable(),
   clientRequestId: z.string().uuid().optional()
 }).superRefine((data, context) => {
+  if (!data.neighborhoodId && !data.neighborhoodName) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["neighborhoodName"], message: "Le nom du quartier est obligatoire." });
+  }
   if (data.occupancyType && !(data.photoUrl || data.businessPhotoUrl)) {
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["businessPhotoUrl"], message: "La photo de la façade est obligatoire." });
   }
@@ -102,6 +106,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Pays ou commune introuvable." }, { status: 404 });
   }
 
+  let neighborhoodId = data.neighborhoodId;
+  if (neighborhoodId) {
+    const neighborhood = await prisma.neighborhood.findFirst({ where: { id: neighborhoodId, communeId: commune.id } });
+    if (!neighborhood) return NextResponse.json({ error: "Quartier introuvable pour cette commune." }, { status: 404 });
+  } else if (data.neighborhoodName) {
+    const existing = await prisma.neighborhood.findFirst({
+      where: { communeId: commune.id, name: { equals: data.neighborhoodName, mode: "insensitive" } }
+    });
+    const neighborhood = existing ?? await prisma.neighborhood.create({ data: { communeId: commune.id, name: data.neighborhoodName } });
+    neighborhoodId = neighborhood.id;
+  }
+
   const communeCode = commune.code ?? commune.name.slice(0, 3).toUpperCase();
   const adresssaId = await generateAdresssaId(country.code, communeCode);
   const userId = (session?.user as any)?.id as string | undefined;
@@ -115,7 +131,7 @@ export async function POST(req: NextRequest) {
         regionId: data.regionId,
         departmentId: data.departmentId,
         communeId: data.communeId,
-        neighborhoodId: data.neighborhoodId,
+        neighborhoodId: neighborhoodId!,
         streetId: data.streetId ?? null,
         buildingNumber: data.buildingNumber ?? null,
         latitude: data.latitude,

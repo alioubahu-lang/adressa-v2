@@ -11,7 +11,7 @@ import { encodePlusCode } from "@/lib/plusCode";
 type Commune = {
   id: string;
   name: string;
-  department: { id: string; region: { id: string; country: { id: string } } };
+  department: { id: string; name: string; region: { id: string; name: string; country: { id: string } } };
 };
 type Neighborhood = { id: string; name: string; streets: { id: string; name: string }[] };
 type OccupancyType = "RESIDENTIEL" | "COMMERCIAL" | "PUBLIC";
@@ -35,6 +35,7 @@ export default function NewAddressPage() {
   const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([]);
   const [communeId, setCommuneId] = useState("");
   const [neighborhoodId, setNeighborhoodId] = useState("");
+  const [neighborhoodName, setNeighborhoodName] = useState("");
   const [streetId, setStreetId] = useState("");
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
@@ -158,6 +159,11 @@ export default function NewAddressPage() {
 
   const selectedNeighborhood = neighborhoods.find((item) => item.id === neighborhoodId);
   const selectedCommune = communes.find((item) => item.id === communeId);
+  const communeGroups = communes.reduce<Map<string, Commune[]>>((groups, commune) => {
+    const label = `${commune.department.region.name} · ${commune.department.name}`;
+    groups.set(label, [...(groups.get(label) ?? []), commune]);
+    return groups;
+  }, new Map());
 
   async function saveOffline(payload: Record<string, unknown>) {
     const { queueAddress } = await import("@/lib/offlineQueue");
@@ -171,8 +177,8 @@ export default function NewAddressPage() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-    if (!selectedCommune || !selectedNeighborhood) {
-      setError("Choisissez la commune et le quartier. Pour travailler hors ligne, ouvrez d’abord ces listes avec une connexion.");
+    if (!selectedCommune || (!neighborhoodId && !neighborhoodName.trim())) {
+      setError("Choisissez la commune et indiquez le quartier.");
       return;
     }
     if (!latitude || !longitude) {
@@ -198,7 +204,8 @@ export default function NewAddressPage() {
       regionId: selectedCommune.department.region.id,
       departmentId: selectedCommune.department.id,
       communeId,
-      neighborhoodId,
+      neighborhoodId: neighborhoodId || undefined,
+      neighborhoodName: neighborhoodId ? undefined : neighborhoodName.trim(),
       streetId: streetId || undefined,
       latitude: Number(latitude),
       longitude: Number(longitude),
@@ -335,12 +342,15 @@ export default function NewAddressPage() {
           {!communes.length && <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">Les listes de communes ne sont pas encore disponibles sur cet appareil. Connectez-vous une fois au réseau puis rechargez cette page pour préparer les saisies hors ligne.</p>}
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="text-sm font-medium">Commune<select required value={communeId} onChange={(e) => { setCommuneId(e.target.value); setNeighborhoodId(""); setStreetId(""); }} className={inputClass}>
-              <option value="">Choisir une commune</option>{communes.map((commune) => <option key={commune.id} value={commune.id}>{commune.name}</option>)}
+            <label className="text-sm font-medium">Commune<select required value={communeId} onChange={(e) => { setCommuneId(e.target.value); setNeighborhoodId(""); setNeighborhoodName(""); setStreetId(""); }} className={inputClass}>
+              <option value="">Choisir une commune</option>{Array.from(communeGroups.entries()).sort(([a], [b]) => a.localeCompare(b, "fr")).map(([department, items]) => <optgroup key={department} label={department}>{items.sort((a, b) => a.name.localeCompare(b.name, "fr")).map((commune) => <option key={commune.id} value={commune.id}>{commune.name}</option>)}</optgroup>)}
             </select></label>
-            <label className="text-sm font-medium">Quartier<select required value={neighborhoodId} onChange={(e) => { setNeighborhoodId(e.target.value); setStreetId(""); }} disabled={!communeId} className={inputClass}>
-              <option value="">Choisir un quartier</option>{neighborhoods.map((neighborhood) => <option key={neighborhood.id} value={neighborhood.id}>{neighborhood.name}</option>)}
-            </select></label>
+            <div className="text-sm font-medium">
+              {neighborhoods.length > 0 && <label className="block">Quartier enregistré<select value={neighborhoodId} onChange={(e) => { setNeighborhoodId(e.target.value); if (e.target.value) setNeighborhoodName(""); setStreetId(""); }} disabled={!communeId} className={inputClass}>
+                <option value="">Choisir ou saisir un quartier</option>{neighborhoods.map((neighborhood) => <option key={neighborhood.id} value={neighborhood.id}>{neighborhood.name}</option>)}
+              </select></label>}
+              {(!neighborhoodId || neighborhoods.length === 0) && <label className="mt-2 block">{neighborhoods.length ? "Ou ajouter un quartier" : "Quartier"}<input required={!neighborhoodId} maxLength={120} value={neighborhoodName} onChange={(e) => setNeighborhoodName(e.target.value)} disabled={!communeId} placeholder="Ex. Dogar, Centre-ville…" className={inputClass} /><span className="mt-1 block text-xs font-normal text-adressa-ink/60">Le quartier sera ajouté au référentiel lors de l’enregistrement.</span></label>}
+            </div>
           </div>
           {selectedNeighborhood?.streets.length ? (
             <label className="block text-sm font-medium">Rue ou voie<select value={streetId} onChange={(e) => setStreetId(e.target.value)} className={inputClass}>

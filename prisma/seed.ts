@@ -1,8 +1,46 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 const prisma = new PrismaClient();
+type TerritorialData = { regions: { name: string; departments: { name: string; communes: string[] }[] }[] };
+
+function slug(value: string): string {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+async function seedSenegalTerritory(countryId: string) {
+  const raw = readFileSync(join(process.cwd(), "prisma", "senegal-territorial.json"), "utf8").replace(/^\uFEFF/, "");
+  const data = JSON.parse(raw) as TerritorialData;
+  for (const regionData of data.regions) {
+    const regionSlug = slug(regionData.name);
+    const regionId = regionSlug === "dakar" ? "region-dakar-seed" : `sn-region-${regionSlug}`;
+    await prisma.region.upsert({ where: { id: regionId }, update: { name: regionData.name, countryId }, create: { id: regionId, name: regionData.name, countryId } });
+    for (const departmentData of regionData.departments) {
+      const departmentSlug = slug(departmentData.name);
+      const departmentId = regionSlug === "dakar" && departmentSlug === "rufisque" ? "dept-rufisque-seed" : `sn-dept-${regionSlug}-${departmentSlug}`;
+      await prisma.department.upsert({ where: { id: departmentId }, update: { name: departmentData.name, regionId }, create: { id: departmentId, name: departmentData.name, regionId } });
+      const occurrences = new Map<string, number>();
+      for (const sourceName of departmentData.communes) {
+        const name = sourceName.startsWith("Thiès (subdivisée en :") ? "Thiès Est" : sourceName;
+        const communeSlug = slug(name);
+        if (regionSlug === "dakar" && departmentSlug === "rufisque" && communeSlug === "sebikhotane") {
+          const id = "commune-sebikotane-seed";
+          await prisma.commune.upsert({ where: { id }, update: { name: "Sébikotane", departmentId, code: "SBK" }, create: { id, name: "Sébikotane", departmentId, code: "SBK" } });
+          continue;
+        }
+        const ordinal = (occurrences.get(communeSlug) ?? 0) + 1;
+        occurrences.set(communeSlug, ordinal);
+        const id = `sn-commune-${regionSlug}-${departmentSlug}-${communeSlug}-${ordinal}`;
+        const code = `${communeSlug.replace(/-/g, "")}${departmentSlug.replace(/-/g, "")}`.slice(0, 6).toUpperCase();
+        await prisma.commune.upsert({ where: { id }, update: { name, departmentId, code }, create: { id, name, departmentId, code } });
+      }
+    }
+  }
+  console.log("Référentiel territorial du Sénégal chargé.");
+}
 
 const PILOT_ADDRESSES = [
   { id: "SN-SBK-001", plusCode: "PVP4+3C8", lat: 14.7351698, lng: -17.1439253 },
@@ -20,6 +58,8 @@ async function main() {
     update: {},
     create: { name: "Sénégal", code: "SN" }
   });
+
+  await seedSenegalTerritory(country.id);
 
   const region = await prisma.region.upsert({
     where: { id: "region-dakar-seed" },
