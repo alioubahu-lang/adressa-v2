@@ -17,10 +17,12 @@ export function AddressExperienceMockup() {
             sizes="(max-width: 1024px) 100vw, 640px"
             className="h-full w-full object-cover"
           />
-          <div className="absolute left-[58.7%] top-[44.1%] z-10 aspect-square w-[7.8%] bg-white p-[0.15%] shadow-sm" aria-label="QR code fonctionnel pour SN-SBK-001">
-            {/* eslint-disable-next-line @next/next/no-img-element -- L’API génère le QR dynamique de démonstration. */}
-            <img src="/api/qr/SN-SBK-001?format=png" alt="" aria-hidden="true" className="h-full w-full object-contain p-1" />
-          </div>
+          <div
+            role="img"
+            aria-label="QR code dynamique de SN-SBK-001"
+            className="absolute z-10 aspect-square bg-contain bg-center bg-no-repeat"
+            style={{ left: "58.7%", top: "44.1%", width: "7.8%", backgroundImage: "url('/api/qr/SN-SBK-001?format=png')" }}
+          />
           <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-black/65 via-black/20 to-transparent p-4 pt-14 sm:p-5 sm:pt-16">
             <div className="text-white drop-shadow-sm">
               <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/80 sm:text-xs">Plaque ADRESSA · Démonstration</p>
