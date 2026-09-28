@@ -1,77 +1,37 @@
 import Link from "next/link";
-import { ArrowUpRight, BadgeCheck, Building2, MapPin, Navigation, PackageCheck, Route, ShieldCheck, Users } from "lucide-react";
-
-const qrRows = [
-  "111111101010111", "100000101110101", "101110100010111", "101110101011001", "101110100111101",
-  "100000101000101", "111111101010111", "000000001101000", "110101110011101", "011010011100010",
-  "101111101011011", "001001011100100", "111010111011110", "100111000101001", "110101101110111"
-];
-
-function DecorativeQr() {
-  return (
-    <div aria-hidden="true" className="grid size-12 shrink-0 grid-cols-[repeat(15,minmax(0,1fr))] gap-px bg-white p-0.5">
-      {qrRows.join("").split("").map((cell, index) => (
-        <span key={index} className={cell === "1" ? "bg-adressa-deep" : "bg-white"} />
-      ))}
-    </div>
-  );
-}
+import Image from "next/image";
+import { ArrowUpRight, BadgeCheck, Building2, MapPin, PackageCheck, Route, ShieldCheck, Users } from "lucide-react";
 
 export function AddressExperienceMockup() {
   return (
-    <div aria-label="Illustration d'une plaque ADRESSA sur un bâtiment et de sa fiche sur smartphone" className="relative mx-auto w-full max-w-[590px]">
-      <div className="absolute -inset-5 rounded-[36px] bg-emerald-300/10 blur-2xl" aria-hidden="true" />
-      <div className="relative min-h-[390px] overflow-hidden rounded-[28px] border border-white/15 bg-[#e8f0e8] p-4 shadow-2xl sm:min-h-[430px] sm:p-6">
-        <div className="absolute inset-0 opacity-30" aria-hidden="true" style={{ backgroundImage: "radial-gradient(#0f2e23 0.65px, transparent 0.65px)", backgroundSize: "15px 15px" }} />
-        <div className="relative h-[330px] overflow-hidden rounded-[20px] bg-gradient-to-br from-[#d8e6d9] via-[#eef1e9] to-[#cedfd2] sm:h-[365px]">
-          <div className="absolute inset-x-0 bottom-0 h-16 bg-[#b5c8ba]" aria-hidden="true" />
-          <div className="absolute bottom-12 left-6 right-10 h-[245px] rounded-t-[110px_22px] bg-gradient-to-br from-[#fffdf6] via-[#f5f0e5] to-[#dcd8cb] shadow-[16px_20px_34px_-20px_rgba(15,46,35,0.55)] sm:left-10 sm:right-16 sm:h-[275px]" aria-hidden="true">
-            <div className="absolute left-1/2 top-0 h-5 w-24 -translate-x-1/2 rounded-b-lg bg-[#c8b99d]" />
-            <div className="absolute bottom-0 left-1/2 h-[90px] w-20 -translate-x-1/2 rounded-t-2xl border-x-[5px] border-t-[5px] border-[#ded7c8] bg-[#83998c] sm:h-[110px] sm:w-24" />
-            <div className="absolute bottom-24 left-5 h-14 w-16 rounded-t-lg border-[5px] border-[#e1d9c7] bg-[#b6d1d0] sm:bottom-28 sm:left-8 sm:h-16 sm:w-20" />
-            <div className="absolute bottom-24 right-5 h-14 w-16 rounded-t-lg border-[5px] border-[#e1d9c7] bg-[#b6d1d0] sm:bottom-28 sm:right-8 sm:h-16 sm:w-20" />
+    <div className="relative mx-auto w-full max-w-[640px]">
+      <div aria-hidden="true" className="absolute -inset-5 rounded-[36px] bg-emerald-300/15 blur-2xl" />
+      <div className="relative overflow-hidden rounded-[28px] border border-white/20 bg-white p-2.5 shadow-2xl sm:p-3">
+        <div className="relative aspect-[3/2] overflow-hidden rounded-[20px] bg-[#e8e2d4]">
+          <Image
+            src="/images/adressa-plaque-tanghor.png"
+            alt="Plaque ADRESSA installée sur une façade, avec l’identifiant SN-SBK-001 pour Tanghor à Sébikotane"
+            width={1536}
+            height={1024}
+            priority
+            sizes="(max-width: 1024px) 100vw, 640px"
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute left-[58.7%] top-[44.1%] z-10 aspect-square w-[7.8%] bg-white p-[0.15%] shadow-sm" aria-label="QR code fonctionnel pour SN-SBK-001">
+            <Image src="/api/qr/SN-SBK-001?format=png" alt="" aria-hidden="true" fill unoptimized sizes="50px" className="object-contain p-[5%]" />
           </div>
-
-          <div className="absolute left-3 top-[43%] z-10 w-[190px] -rotate-2 rounded-lg border border-black/10 bg-white p-2.5 shadow-xl sm:left-6 sm:w-[225px] sm:p-3">
-            <div className="flex items-center gap-2.5">
-              <div className="min-w-0 flex-1">
-                <p className="text-[8px] font-bold tracking-[0.18em] text-adressa-green sm:text-[9px]">ADRESSA · SÉBIKOTANE</p>
-                <p className="mt-1 text-[15px] font-black leading-none text-adressa-deep sm:text-lg">SN-SBK-001</p>
-                <p className="mt-1.5 text-[8px] text-adressa-ink/60 sm:text-[9px]">Chaque lieu a une identité</p>
-              </div>
-              <DecorativeQr />
+          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-black/65 via-black/20 to-transparent p-4 pt-14 sm:p-5 sm:pt-16">
+            <div className="text-white drop-shadow-sm">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/80 sm:text-xs">Plaque ADRESSA · Démonstration</p>
+              <p className="mt-1 text-sm font-bold sm:text-base">SN-SBK-001 · Tanghor</p>
             </div>
+            <Link href="/a/SN-SBK-001" className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl bg-white px-3 text-xs font-bold text-adressa-deep shadow-lg transition hover:bg-emerald-50 sm:px-4 sm:text-sm">
+              Voir la fiche <ArrowUpRight size={15} aria-hidden="true" />
+            </Link>
           </div>
-
-          <div className="absolute bottom-4 left-3 flex items-center gap-2 rounded-full border border-white/70 bg-white/85 px-3 py-1.5 text-[10px] font-medium text-adressa-deep shadow-sm backdrop-blur sm:bottom-5 sm:left-5 sm:text-xs">
-            <MapPin size={13} className="text-adressa-green" aria-hidden="true" /> Plaque physique · fiche numérique
-          </div>
-
-          <div className="absolute bottom-2 right-3 z-20 w-[142px] rounded-[22px] border-[5px] border-[#10231b] bg-[#10231b] p-1.5 shadow-2xl sm:bottom-3 sm:right-7 sm:w-[168px] sm:rounded-[26px] sm:border-[6px]">
-            <div className="overflow-hidden rounded-[15px] bg-white sm:rounded-[19px]">
-              <div className="flex h-5 items-center justify-center bg-adressa-deep sm:h-6"><span className="h-1 w-8 rounded-full bg-white/50" /></div>
-              <div className="p-2.5 sm:p-3">
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-[7px] font-black tracking-widest text-adressa-green sm:text-[8px]">ADRESSA</span>
-                  <BadgeCheck size={13} className="text-adressa-green" aria-label="Adresse vérifiée" />
-                </div>
-                <div className="relative mb-2 h-14 overflow-hidden rounded-lg bg-gradient-to-br from-[#d9ece4] via-[#c0ddd2] to-[#a2caba] sm:h-[70px]">
-                  <div className="absolute -bottom-3 left-1/2 h-12 w-12 -translate-x-1/2 rounded-t-full bg-white/80" />
-                  <div className="absolute left-1/2 top-2 -translate-x-1/2 text-adressa-green"><MapPin size={18} fill="currentColor" /></div>
-                  <span className="absolute bottom-1 left-2 rounded-full bg-white/80 px-1.5 py-0.5 text-[6px] text-adressa-deep">TANGHOR</span>
-                </div>
-                <p className="text-[10px] font-black text-adressa-deep sm:text-xs">SN-SBK-001</p>
-                <p className="mt-0.5 text-[7px] text-adressa-ink/60 sm:text-[8px]">Tanghor · Sébikotane</p>
-                <div className="mt-2 flex items-center gap-1 rounded-md bg-adressa-light px-1.5 py-1 text-[7px] font-semibold text-adressa-deep sm:text-[8px]">
-                  <Navigation size={10} /> Itinéraire vers l&apos;entrée
-                </div>
-                <p className="mt-2 text-center text-[6px] text-adressa-ink/40">FICHE ADRESSE SUR MOBILE</p>
-              </div>
-            </div>
-          </div>
-          <div className="absolute right-4 top-4 z-10 rounded-full border border-white/70 bg-white/80 px-3 py-1.5 text-[9px] font-semibold text-adressa-deep shadow-sm backdrop-blur sm:right-6 sm:top-6 sm:text-[10px]">
-            Du terrain au numérique
-          </div>
+          <span className="absolute right-3 top-3 rounded-full border border-white/70 bg-white/90 px-3 py-1.5 text-[9px] font-semibold text-adressa-deep shadow-sm backdrop-blur sm:right-4 sm:top-4 sm:text-[10px]">
+            Tanghor · Sébikotane
+          </span>
         </div>
       </div>
     </div>
