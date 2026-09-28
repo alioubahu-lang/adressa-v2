@@ -81,8 +81,8 @@ async function main() {
 
   const neighborhood = await prisma.neighborhood.upsert({
     where: { id: "neighborhood-dogar-seed" },
-    update: {},
-    create: { id: "neighborhood-dogar-seed", name: "Dogar", communeId: commune.id }
+    update: { name: "Tanghor" },
+    create: { id: "neighborhood-dogar-seed", name: "Tanghor", communeId: commune.id }
   });
 
   // Compte administrateur de démonstration — mot de passe fourni via variable d'environnement,

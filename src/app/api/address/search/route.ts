@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// GET /api/address/search?q=SN-SBK-001 | Sébikotane | Dogar | nom de rue
+// GET /api/address/search?q=SN-SBK-001 | Sébikotane | Tanghor | nom de rue
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const q = (searchParams.get("q") ?? "").trim();

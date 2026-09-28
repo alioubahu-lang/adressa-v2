@@ -33,7 +33,7 @@ export const sectors: Sector[] = [
         address_details: {
           region: "Dakar",
           commune: "Sébikotane",
-          quartier: "Dogar",
+          quartier: "Tanghor",
           landmark: "Près de TotalEnergies Sébikotane"
         },
         verified: true
@@ -54,7 +54,7 @@ export const sectors: Sector[] = [
       data: {
         adressa_id: "SN-SBK-002",
         valid: true,
-        display_address: "SN-SBK-002 — Dogar, Sébikotane",
+        display_address: "SN-SBK-002 — Tanghor, Sébikotane",
         coordinates: { lat: 14.7351691, lng: -17.1438918 }
       }
     }
@@ -91,7 +91,7 @@ export const sectors: Sector[] = [
       data: {
         adressa_id: "SN-SBK-004",
         commune: "Sébikotane",
-        quartier: "Dogar",
+        quartier: "Tanghor",
         plus_code: "PVM4+PC5",
         building_type: "Maison individuelle",
         verified: true
@@ -114,7 +114,7 @@ export const sectors: Sector[] = [
         address_verified: true,
         verification_method: "terrain",
         commune: "Sébikotane",
-        quartier: "Dogar"
+        quartier: "Tanghor"
       }
     }
   },
@@ -132,8 +132,8 @@ export const sectors: Sector[] = [
       data: {
         adressa_id: "SN-SBK-001",
         commune: "Sébikotane",
-        quartier: "Dogar",
-        zone_reference: "Dogar-01",
+        quartier: "Tanghor",
+        zone_reference: "Tanghor-01",
         coordinates: { lat: 14.7351698, lng: -17.1439253 }
       }
     }
@@ -171,7 +171,7 @@ export const sectors: Sector[] = [
       data: {
         adressa_id: "SN-SBK-003",
         commune: "Sébikotane",
-        quartier: "Dogar",
+        quartier: "Tanghor",
         access_instructions: "Portail vert, sonner à l'interphone",
         coordinates: { lat: 14.7345829, lng: -17.144212 }
       }

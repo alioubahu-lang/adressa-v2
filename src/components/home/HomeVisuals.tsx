@@ -58,10 +58,10 @@ export function AddressExperienceMockup() {
                 <div className="relative mb-2 h-14 overflow-hidden rounded-lg bg-gradient-to-br from-[#d9ece4] via-[#c0ddd2] to-[#a2caba] sm:h-[70px]">
                   <div className="absolute -bottom-3 left-1/2 h-12 w-12 -translate-x-1/2 rounded-t-full bg-white/80" />
                   <div className="absolute left-1/2 top-2 -translate-x-1/2 text-adressa-green"><MapPin size={18} fill="currentColor" /></div>
-                  <span className="absolute bottom-1 left-2 rounded-full bg-white/80 px-1.5 py-0.5 text-[6px] text-adressa-deep">DOGAR</span>
+                  <span className="absolute bottom-1 left-2 rounded-full bg-white/80 px-1.5 py-0.5 text-[6px] text-adressa-deep">TANGHOR</span>
                 </div>
                 <p className="text-[10px] font-black text-adressa-deep sm:text-xs">SN-SBK-001</p>
-                <p className="mt-0.5 text-[7px] text-adressa-ink/60 sm:text-[8px]">Dogar · Sébikotane</p>
+                <p className="mt-0.5 text-[7px] text-adressa-ink/60 sm:text-[8px]">Tanghor · Sébikotane</p>
                 <div className="mt-2 flex items-center gap-1 rounded-md bg-adressa-light px-1.5 py-1 text-[7px] font-semibold text-adressa-deep sm:text-[8px]">
                   <Navigation size={10} /> Itinéraire vers l&apos;entrée
                 </div>
@@ -154,7 +154,7 @@ export function MunicipalDashboardPreview() {
           </div>
           <div className="rounded-xl border border-black/[0.06] p-3">
             <div className="mb-3 flex items-center justify-between"><p className="text-[9px] font-bold text-adressa-deep sm:text-[10px]">À valider</p><span className="rounded-md bg-amber-50 px-1.5 py-0.5 text-[8px] text-amber-700">36</span></div>
-            {["SN-SBK-126", "SN-SBK-125", "SN-SBK-124"].map((id, index) => <div key={id} className="flex items-center gap-2 border-t border-black/[0.05] py-2"><div className="grid size-7 shrink-0 place-items-center rounded-lg bg-adressa-light text-adressa-green"><MapPin size={12} /></div><div className="min-w-0"><p className="text-[8px] font-bold text-adressa-deep sm:text-[9px]">{id}</p><p className="text-[7px] text-adressa-ink/50">{index === 0 ? "Dogar · Commerce" : "Quartier · Habitation"}</p></div><BadgeCheck size={13} className="ml-auto text-adressa-ink/20" /></div>)}
+            {["SN-SBK-126", "SN-SBK-125", "SN-SBK-124"].map((id, index) => <div key={id} className="flex items-center gap-2 border-t border-black/[0.05] py-2"><div className="grid size-7 shrink-0 place-items-center rounded-lg bg-adressa-light text-adressa-green"><MapPin size={12} /></div><div className="min-w-0"><p className="text-[8px] font-bold text-adressa-deep sm:text-[9px]">{id}</p><p className="text-[7px] text-adressa-ink/50">{index === 0 ? "Tanghor · Commerce" : "Quartier · Habitation"}</p></div><BadgeCheck size={13} className="ml-auto text-adressa-ink/20" /></div>)}
           </div>
         </div>
         <div className="flex items-center justify-between border-t border-black/[0.06] px-3 py-2.5 sm:px-4"><span className="text-[8px] text-adressa-ink/50 sm:text-[9px]">Synthèse du territoire</span><span className="inline-flex items-center gap-1 text-[8px] font-semibold text-adressa-green sm:text-[9px]"><ShieldCheck size={12} /> Accès mairie sécurisé</span></div>

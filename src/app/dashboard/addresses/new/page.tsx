@@ -349,7 +349,7 @@ export default function NewAddressPage() {
               {neighborhoods.length > 0 && <label className="block">Quartier enregistré<select value={neighborhoodId} onChange={(e) => { setNeighborhoodId(e.target.value); if (e.target.value) setNeighborhoodName(""); setStreetId(""); }} disabled={!communeId} className={inputClass}>
                 <option value="">Choisir ou saisir un quartier</option>{neighborhoods.map((neighborhood) => <option key={neighborhood.id} value={neighborhood.id}>{neighborhood.name}</option>)}
               </select></label>}
-              {(!neighborhoodId || neighborhoods.length === 0) && <label className="mt-2 block">{neighborhoods.length ? "Ou ajouter un quartier" : "Quartier"}<input required={!neighborhoodId} maxLength={120} value={neighborhoodName} onChange={(e) => setNeighborhoodName(e.target.value)} disabled={!communeId} placeholder="Ex. Dogar, Centre-ville…" className={inputClass} /><span className="mt-1 block text-xs font-normal text-adressa-ink/60">Le quartier sera ajouté au référentiel lors de l’enregistrement.</span></label>}
+              {(!neighborhoodId || neighborhoods.length === 0) && <label className="mt-2 block">{neighborhoods.length ? "Ou ajouter un quartier" : "Quartier"}<input required={!neighborhoodId} maxLength={120} value={neighborhoodName} onChange={(e) => setNeighborhoodName(e.target.value)} disabled={!communeId} placeholder="Ex. Tanghor, Centre-ville…" className={inputClass} /><span className="mt-1 block text-xs font-normal text-adressa-ink/60">Le quartier sera ajouté au référentiel lors de l’enregistrement.</span></label>}
             </div>
           </div>
           {selectedNeighborhood?.streets.length ? (

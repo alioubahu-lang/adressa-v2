@@ -64,7 +64,7 @@ export function HeroSearch() {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query && setOpen(true)}
           aria-label="Rechercher une adresse ADRESSA"
-          placeholder="Entrez un identifiant : SN-SBK-001, Sébikotane, Dogar…"
+          placeholder="Entrez un identifiant : SN-SBK-001, Sébikotane, Tanghor…"
           className="min-w-0 flex-1 bg-transparent px-1 py-3 text-sm text-adressa-ink placeholder:text-adressa-ink/40 focus:outline-none sm:text-base"
         />
         <Link

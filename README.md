@@ -37,7 +37,7 @@ npm run seed
 ```
 
 Le seed crée :
-- L'arborescence géographique Sénégal → Dakar → Rufisque → Sébikotane → Dogar
+- L'arborescence géographique Sénégal → Dakar → Rufisque → Sébikotane → Tanghor
 - Les 5 adresses pilotes avec leurs QR codes
 - Un compte `SUPER_ADMIN` de démonstration (email `SEED_ADMIN_EMAIL`, mot de passe `SEED_ADMIN_PASSWORD`)
 

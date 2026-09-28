@@ -48,7 +48,7 @@ export default function SearchPage() {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="SN-SBK-001, Sébikotane, Dogar…"
+          placeholder="SN-SBK-001, Sébikotane, Tanghor…"
           className="flex-1 rounded-xl border border-black/10 px-4 py-3 focus:border-adressa-green focus:outline-none"
         />
         <button type="submit" className="btn-primary">
