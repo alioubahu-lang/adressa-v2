@@ -33,10 +33,15 @@ export function Sidebar({ role }: { role?: Role }) {
 
   return (
     <aside className="hidden w-60 shrink-0 flex-col border-r border-black/5 bg-white px-4 py-6 md:flex">
-      <div className="mb-8 flex items-center gap-2 px-2">
-        <Image src="/logo-icon-512.png" alt="ADRESSA" width={28} height={28} className="rounded-md" />
+      <Link
+        href="/"
+        aria-label="Revenir à l’accueil ADRESSA"
+        title="Retour à l’accueil"
+        className="mb-8 flex items-center gap-2 rounded-lg px-2 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-adressa-green"
+      >
+        <Image src="/logo-icon-512.png" alt="" aria-hidden="true" width={32} height={32} />
         <span className="text-lg font-black tracking-widest text-adressa-deep">ADRESSA</span>
-      </div>
+      </Link>
       <nav className="flex flex-col gap-1">
         {[...items, ...extra, settingsItem].map((item) => (
           <Link
