@@ -12,16 +12,30 @@ const SingleAddressMap = nextDynamic(() => import("@/components/SingleAddressMap
 
 async function getAddress(id: string) {
   return prisma.address.findUnique({
-    where: { adresssaId: id.toUpperCase() },
+    where: { adresssaId: id.toUpperCase(), status: "PUBLIE" },
     include: { commune: true, neighborhood: true, street: true, qrCode: true }
   });
 }
 
 function getOrigin() {
   const h = headers();
-  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
-  const host = h.get("host");
-  const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+  const isProduction = process.env.NODE_ENV === "production";
+  const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (configuredUrl) {
+    try {
+      const configured = new URL(configuredUrl);
+      const isLocalHost = ["localhost", "127.0.0.1", "::1"].includes(configured.hostname);
+      if (!isProduction || !isLocalHost) return configured.origin;
+    } catch {
+      // Une URL invalide ne doit pas empêcher la fiche d'être affichée.
+    }
+  }
+  const vercelHost = process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL;
+  if (isProduction && vercelHost) return `https://${vercelHost.replace(/^https?:\/\//, "")}`;
+  const host = h.get("x-forwarded-host")?.split(",")[0]?.trim() ?? h.get("host");
+  if (!host) return configuredUrl ?? "http://localhost:3000";
+  const forwardedProtocol = h.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  const protocol = forwardedProtocol ?? (isProduction ? "https" : "http");
   return `${protocol}://${host}`;
 }
 
@@ -259,14 +273,16 @@ export default async function PublicAddressPage({ params }: { params: { id: stri
             </p>
           </div>
 
-          <div className="text-center">
-            <a
-              href={`mailto:?subject=Signaler une erreur ${address.adresssaId}`}
-              className="text-xs text-adressa-ink/40 underline"
-            >
-              Signaler une erreur
-            </a>
-          </div>
+          {process.env.NEXT_PUBLIC_CONTACT_EMAIL && (
+            <div className="text-center">
+              <a
+                href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL}?subject=${encodeURIComponent(`Signaler une erreur ${address.adresssaId}`)}`}
+                className="text-xs text-adressa-ink/40 underline"
+              >
+                Signaler une erreur
+              </a>
+            </div>
+          )}
         </div>
 
         <p className="mt-10 text-center text-xs text-adressa-ink/40">Cette adresse est identifiée par ADRESSA.</p>

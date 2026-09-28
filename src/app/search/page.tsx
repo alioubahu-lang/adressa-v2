@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AddressCard } from "@/components/AddressCard";
+import { SiteHeader } from "@/components/SiteHeader";
 
 type Result = {
   adresssaId: string;
@@ -29,7 +30,9 @@ export default function SearchPage() {
   }
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-12">
+    <main>
+      <SiteHeader />
+      <section className="mx-auto max-w-4xl px-6 py-12">
       <h1 className="text-3xl font-black text-adressa-deep">Rechercher une adresse</h1>
       <p className="mt-2 text-adressa-ink/60">
         Par identifiant (SN-SBK-001), ville, quartier ou nom de rue.
@@ -70,6 +73,7 @@ export default function SearchPage() {
           />
         ))}
       </div>
+      </section>
     </main>
   );
 }
