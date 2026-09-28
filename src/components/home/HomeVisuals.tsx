@@ -22,6 +22,19 @@ export function AddressExperienceMockup() {
             <div className="absolute bottom-24 right-5 h-14 w-16 rounded-t-lg border-[5px] border-[#e1d9c7] bg-[#b6d1d0] sm:bottom-28 sm:right-8 sm:h-16 sm:w-20" />
           </div>
 
+          <div aria-hidden="true" className="pointer-events-none absolute left-[25%] top-[4%] z-[1] h-[78%] w-[70%]">
+            <svg viewBox="0 0 320 240" className="absolute inset-0 h-full w-full text-[#16836d]" fill="none">
+              <path d="M24 47 55 29 104 33 140 26 184 37 223 31 272 47 298 68 286 91 300 111 278 129 288 145 263 157 246 171 269 184 249 195 224 198 205 212 183 205 162 211 144 194 119 196 98 183 77 178 59 158 44 153 49 137 32 124 39 107 25 90 36 72Z" fill="currentColor" fillOpacity=".16" stroke="currentColor" strokeOpacity=".3" strokeWidth="2.5" strokeLinejoin="round" />
+              <path d="M187 182c-11 4-19 6-28 7l3 22 21-6 22 7 19-14-23-16Z" fill="#e8f0e8" fillOpacity=".8" />
+              <circle cx="58" cy="104" r="17" fill="white" fillOpacity=".7" />
+              <path d="M58 94c-6 0-10 4.5-10 10 0 7.5 10 18 10 18s10-10.5 10-18c0-5.5-4-10-10-10Z" fill="#16a085" />
+              <circle cx="58" cy="104" r="3.5" fill="white" />
+              <path d="M70 105h24" stroke="#16836d" strokeOpacity=".65" strokeWidth="1.5" strokeDasharray="3 3" />
+              <text x="98" y="109" fill="#17624f" fillOpacity=".72" fontSize="9" fontWeight="700" letterSpacing="1.1">SÉBIKOTANE</text>
+            </svg>
+            <img src="/logo-full.png" alt="" className="absolute left-[31%] top-[43%] w-[48%] opacity-[0.28] mix-blend-multiply" />
+          </div>
+
           <Link href="/a/SN-SBK-001" aria-label="Ouvrir la fiche de démonstration SN-SBK-001" className="absolute left-3 top-[43%] z-10 w-[190px] -rotate-2 rounded-lg border border-white/20 bg-gradient-to-br from-[#174a37] to-[#0c2e23] p-2.5 text-white shadow-xl ring-1 ring-black/15 sm:left-6 sm:w-[225px] sm:p-3">
             <span aria-hidden="true" className="absolute left-2 top-2 size-1.5 rounded-full bg-[#d7d2c6] shadow-[inset_0_1px_1px_rgba(0,0,0,.45)] sm:left-2.5 sm:top-2.5" />
             <span aria-hidden="true" className="absolute right-2 top-2 size-1.5 rounded-full bg-[#d7d2c6] shadow-[inset_0_1px_1px_rgba(0,0,0,.45)] sm:right-2.5 sm:top-2.5" />
