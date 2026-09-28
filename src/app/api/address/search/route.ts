@@ -21,7 +21,21 @@ export async function GET(req: NextRequest) {
         { landmark: { contains: q, mode: "insensitive" } }
       ]
     },
-    include: { commune: true, neighborhood: true, street: true },
+    select: {
+      adresssaId: true,
+      latitude: true,
+      longitude: true,
+      landmark: true,
+      plusCode: true,
+      photoUrl: true,
+      buildingType: true,
+      occupancyType: true,
+      businessName: true,
+      businessCategory: true,
+      commune: { select: { name: true } },
+      neighborhood: { select: { name: true } },
+      street: { select: { name: true } }
+    },
     take: 25
   });
 

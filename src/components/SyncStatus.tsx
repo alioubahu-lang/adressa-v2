@@ -8,18 +8,21 @@ export function SyncStatus() {
   const [online, setOnline] = useState(true);
   const [syncing, setSyncing] = useState(false);
 
-  const refresh = useCallback(() => setPendingCount(getPendingAddresses().length), []);
+  const refresh = useCallback(async () => setPendingCount((await getPendingAddresses()).length), []);
 
   const trySync = useCallback(async () => {
-    if (getPendingAddresses().length === 0) return;
+    if ((await getPendingAddresses()).length === 0) return;
     setSyncing(true);
-    await syncPendingAddresses();
-    setSyncing(false);
-    refresh();
+    try {
+      await syncPendingAddresses();
+    } finally {
+      setSyncing(false);
+      await refresh();
+    }
   }, [refresh]);
 
   useEffect(() => {
-    refresh();
+    refresh().catch(() => setPendingCount(0));
     setOnline(navigator.onLine);
 
     const handleOnline = () => {

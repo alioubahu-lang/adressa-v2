@@ -21,11 +21,35 @@ const createAddressSchema = z.object({
   landmark: z.string().optional().nullable(),
   buildingType: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
-  photoUrl: z.string().url().optional().nullable()
+  photoUrl: z.string().url().optional().nullable(),
+  businessPhotoUrl: z.string().url().optional().nullable(),
+  platePhotoUrl: z.string().url().optional().nullable(),
+  occupancyType: z.enum(["RESIDENTIEL", "COMMERCIAL", "PUBLIC"]).optional().nullable(),
+  businessName: z.string().trim().max(160).optional().nullable(),
+  businessCategory: z.string().trim().max(80).optional().nullable(),
+  businessNinea: z.string().trim().max(80).optional().nullable(),
+  businessRegister: z.string().trim().max(80).optional().nullable(),
+  plateStatus: z.enum(["POSEE", "EN_ATTENTE"]).optional().nullable(),
+  gpsAccuracyMeters: z.number().min(0).max(100000).optional().nullable(),
+  clientRequestId: z.string().uuid().optional()
+}).superRefine((data, context) => {
+  if (data.occupancyType && !(data.photoUrl || data.businessPhotoUrl)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["businessPhotoUrl"], message: "La photo de la façade est obligatoire." });
+  }
+  if (data.occupancyType === "COMMERCIAL") {
+    if (!data.businessName?.trim()) context.addIssue({ code: z.ZodIssueCode.custom, path: ["businessName"], message: "L'enseigne est obligatoire pour un commerce." });
+    if (!data.businessCategory?.trim()) context.addIssue({ code: z.ZodIssueCode.custom, path: ["businessCategory"], message: "La catégorie est obligatoire pour un commerce." });
+  }
+  if (data.plateStatus === "POSEE" && !data.platePhotoUrl) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["platePhotoUrl"], message: "La photo de la plaque posée est obligatoire." });
+  }
 });
 
 // GET /api/address — liste paginée (usage dashboard)
 export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
+
   const { searchParams } = new URL(req.url);
   const page = Math.max(1, Number(searchParams.get("page") ?? "1"));
   const pageSize = Math.min(100, Math.max(1, Number(searchParams.get("pageSize") ?? "20")));
@@ -65,6 +89,11 @@ export async function POST(req: NextRequest) {
   }
   const data = parsed.data;
 
+  if (data.clientRequestId) {
+    const existingRequest = await prisma.address.findUnique({ where: { clientRequestId: data.clientRequestId } });
+    if (existingRequest) return NextResponse.json(existingRequest);
+  }
+
   const [country, commune] = await Promise.all([
     prisma.country.findUnique({ where: { id: data.countryId } }),
     prisma.commune.findUnique({ where: { id: data.communeId } })
@@ -77,45 +106,63 @@ export async function POST(req: NextRequest) {
   const adresssaId = await generateAdresssaId(country.code, communeCode);
   const userId = (session?.user as any)?.id as string | undefined;
 
-  const address = await prisma.address.create({
-    data: {
-      adresssaId,
-      countryId: data.countryId,
-      regionId: data.regionId,
-      departmentId: data.departmentId,
-      communeId: data.communeId,
-      neighborhoodId: data.neighborhoodId,
-      streetId: data.streetId ?? null,
-      buildingNumber: data.buildingNumber ?? null,
-      latitude: data.latitude,
-      longitude: data.longitude,
-      entranceLatitude: data.entranceLatitude ?? null,
-      entranceLongitude: data.entranceLongitude ?? null,
-      plusCode: data.plusCode ?? null,
-      landmark: data.landmark ?? null,
-      buildingType: data.buildingType ?? null,
-      description: data.description ?? null,
-      photoUrl: data.photoUrl ?? null,
-      status: "COLLECTE",
-      createdById: userId ?? null,
-      qrCode: {
-        create: {
-          code: adresssaId,
-          targetUrl: `/a/${adresssaId}`
-        }
-      },
-      history: userId
-        ? {
-            create: {
-              userId,
-              action: "CREATION",
-              newValue: adresssaId
-            }
+  try {
+    const address = await prisma.address.create({
+      data: {
+        clientRequestId: data.clientRequestId,
+        adresssaId,
+        countryId: data.countryId,
+        regionId: data.regionId,
+        departmentId: data.departmentId,
+        communeId: data.communeId,
+        neighborhoodId: data.neighborhoodId,
+        streetId: data.streetId ?? null,
+        buildingNumber: data.buildingNumber ?? null,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        entranceLatitude: data.entranceLatitude ?? null,
+        entranceLongitude: data.entranceLongitude ?? null,
+        plusCode: data.plusCode ?? null,
+        landmark: data.landmark ?? null,
+        buildingType: data.buildingType ?? null,
+        description: data.description ?? null,
+        photoUrl: data.photoUrl ?? data.businessPhotoUrl ?? null,
+        businessPhotoUrl: data.businessPhotoUrl ?? data.photoUrl ?? null,
+        platePhotoUrl: data.platePhotoUrl ?? null,
+        occupancyType: data.occupancyType ?? null,
+        businessName: data.businessName ?? null,
+        businessCategory: data.businessCategory ?? null,
+        businessNinea: data.businessNinea ?? null,
+        businessRegister: data.businessRegister ?? null,
+        plateStatus: data.plateStatus ?? null,
+        gpsAccuracyMeters: data.gpsAccuracyMeters ?? null,
+        status: "COLLECTE",
+        createdById: userId ?? null,
+        qrCode: {
+          create: {
+            code: adresssaId,
+            targetUrl: `/a/${adresssaId}`
           }
-        : undefined
-    },
-    include: { qrCode: true }
-  });
+        },
+        history: userId
+          ? {
+              create: {
+                userId,
+                action: "CREATION",
+                newValue: adresssaId
+              }
+            }
+          : undefined
+      },
+      include: { qrCode: true }
+    });
 
-  return NextResponse.json(address, { status: 201 });
+    return NextResponse.json(address, { status: 201 });
+  } catch (error) {
+    if (data.clientRequestId && (error as { code?: string }).code === "P2002") {
+      const existingRequest = await prisma.address.findUnique({ where: { clientRequestId: data.clientRequestId } });
+      if (existingRequest) return NextResponse.json(existingRequest);
+    }
+    throw error;
+  }
 }

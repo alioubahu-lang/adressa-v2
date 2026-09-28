@@ -17,10 +17,14 @@ type AddressRow = {
   commune: { name: string };
   neighborhood: { name: string };
   street: { name: string } | null;
+  occupancyType: string | null;
+  businessName: string | null;
+  businessCategory: string | null;
 };
 
 type SearchParams = {
   queued?: string;
+  created?: string;
   q?: string;
   commune?: string;
   status?: string;
@@ -80,6 +84,11 @@ export default async function DashboardAddressesPage({ searchParams }: { searchP
           📥 Adresse enregistrée localement — elle sera envoyée automatiquement dès le retour de connexion.
         </div>
       )}
+      {searchParams.created && (
+        <div className="mb-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+          Adresse créée et synchronisée. Son identifiant ADRESSA est attribué par le serveur.
+        </div>
+      )}
 
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-adressa-deep">Adresses</h1>
@@ -98,6 +107,7 @@ export default async function DashboardAddressesPage({ searchParams }: { searchP
               <th className="px-4 py-3">Commune</th>
               <th className="px-4 py-3">Quartier</th>
               <th className="px-4 py-3">Rue</th>
+              <th className="px-4 py-3">Usage / commerce</th>
               <th className="px-4 py-3">GPS</th>
               <th className="px-4 py-3">Statut</th>
               <th className="px-4 py-3">Vérifiée</th>
@@ -111,6 +121,10 @@ export default async function DashboardAddressesPage({ searchParams }: { searchP
                 <td className="px-4 py-3">{a.commune.name}</td>
                 <td className="px-4 py-3">{a.neighborhood.name}</td>
                 <td className="px-4 py-3">{a.street?.name ?? "—"}</td>
+                <td className="px-4 py-3">
+                  <div>{a.occupancyType === "COMMERCIAL" ? "Commerce" : a.occupancyType === "PUBLIC" ? "Équipement public" : a.occupancyType === "RESIDENTIEL" ? "Habitation" : "—"}</div>
+                  {a.businessName && <div className="text-xs text-adressa-ink/60">{a.businessName}{a.businessCategory ? ` · ${a.businessCategory}` : ""}</div>}
+                </td>
                 <td className="whitespace-nowrap px-4 py-3 font-mono text-xs">
                   {a.latitude.toFixed(5)}, {a.longitude.toFixed(5)}
                 </td>
@@ -158,7 +172,7 @@ export default async function DashboardAddressesPage({ searchParams }: { searchP
             ))}
             {addresses.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-adressa-ink/40">
+                <td colSpan={9} className="px-4 py-8 text-center text-adressa-ink/40">
                   Aucune adresse ne correspond à ces critères.
                 </td>
               </tr>

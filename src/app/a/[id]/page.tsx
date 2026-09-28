@@ -109,6 +109,12 @@ export default async function PublicAddressPage({ params }: { params: { id: stri
             {address.buildingType && (
               <p className="mt-1 text-sm font-medium text-adressa-ink/60">{address.buildingType}</p>
             )}
+            {address.occupancyType === "COMMERCIAL" && address.businessName && (
+              <div className="mt-3 inline-flex flex-col rounded-xl bg-adressa-light px-4 py-3">
+                <span className="font-semibold text-adressa-deep">{address.businessName}</span>
+                {address.businessCategory && <span className="mt-0.5 text-sm text-adressa-ink/70">{address.businessCategory}</span>}
+              </div>
+            )}
 
             {/* Photo */}
             {address.photoUrl ? (

@@ -148,6 +148,16 @@ model Address {
   landmark         String?
   description      String?
   photoUrl         String?
+  businessPhotoUrl String?
+  platePhotoUrl    String?
+  occupancyType    String?
+  businessName     String?
+  businessCategory String?
+  businessNinea    String?
+  businessRegister String?
+  plateStatus      String?
+  gpsAccuracyMeters Float?
+  clientRequestId  String?       @unique
   buildingType     String? // ex: "Maison individuelle" — renseigné au cas par cas, jamais déduit
   taxStatus        TaxStatus     @default(NON_RENSEIGNE)
   status           AddressStatus @default(BROUILLON)
@@ -173,6 +183,8 @@ model Address {
   @@index([communeId])
   @@index([neighborhoodId])
   @@index([status])
+  @@index([occupancyType])
+  @@index([businessCategory])
   @@map("addresses")
 }
 

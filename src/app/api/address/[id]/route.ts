@@ -6,6 +6,9 @@ import { hasPermission, type Role } from "@/lib/permissions";
 
 // GET /api/address/SN-SBK-001
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
+
   const address = await prisma.address.findUnique({
     where: { adresssaId: params.id.toUpperCase() },
     include: { commune: true, neighborhood: true, street: true, region: true, country: true, qrCode: true }
@@ -56,6 +59,15 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     "streetId",
     "buildingNumber",
     "buildingType",
+    "businessPhotoUrl",
+    "platePhotoUrl",
+    "occupancyType",
+    "businessName",
+    "businessCategory",
+    "businessNinea",
+    "businessRegister",
+    "plateStatus",
+    "gpsAccuracyMeters",
     "taxStatus"
   ] as const;
 
