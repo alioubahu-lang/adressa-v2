@@ -10,11 +10,11 @@ export function EntreprisesHero() {
   return (
     <>
       <div className="flex flex-wrap justify-center gap-3">
-        <button type="button" onClick={() => setModalOpen(true)} className="btn-primary bg-white text-adressa-deep hover:bg-adressa-light">
+        <button type="button" onClick={() => setModalOpen(true)} className="btn-primary !bg-white !text-adressa-deep hover:!bg-adressa-light">
           <Calendar size={18} className="mr-2 inline-block" />
           Planifier une démonstration métier
         </button>
-        <a href="#calculateur-impact" className="btn-secondary bg-transparent text-white border-white/30 hover:bg-white/10">
+        <a href="#calculateur-impact" className="btn-secondary !border-white/30 !bg-transparent !text-white hover:!bg-white/10">
           <TrendingUp size={18} className="mr-2 inline-block" />
           Estimer mes gains opérationnels
         </a>
