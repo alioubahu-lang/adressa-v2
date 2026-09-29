@@ -7,10 +7,22 @@ import { prisma } from "@/lib/prisma";
 import { SiteHeader } from "@/components/SiteHeader";
 import { CopyButton } from "@/components/CopyButton";
 import { ShareButton } from "@/components/ShareButton";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 const SingleAddressMap = nextDynamic(() => import("@/components/SingleAddressMap"), { ssr: false });
 
 async function getAddress(id: string) {
+  const session = await getServerSession(authOptions);
+  const user = session?.user as any;
+  if (user?.role === "AGENT") {
+    const savedUser = user.id ? await prisma.user.findUnique({ where: { id: user.id }, select: { communeId: true } }) : null;
+    if (!savedUser?.communeId) return null;
+    return prisma.address.findFirst({
+      where: { adresssaId: id.toUpperCase(), createdById: user.id, communeId: savedUser.communeId, verified: false, status: { in: ["BROUILLON", "COLLECTE", "A_VERIFIER"] } },
+      include: { commune: true, neighborhood: true, street: true, qrCode: true }
+    });
+  }
   return prisma.address.findUnique({
     where: { adresssaId: id.toUpperCase(), status: "PUBLIE" },
     include: { commune: true, neighborhood: true, street: true, qrCode: true }

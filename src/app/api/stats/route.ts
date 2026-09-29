@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 // GET /api/stats — KPI pour le dashboard
 export async function GET() {
+  const session = await getServerSession(authOptions);
+  if ((session?.user as any)?.role === "AGENT") {
+    return NextResponse.json({ error: "Indicateurs généraux indisponibles dans l’espace terrain." }, { status: 403 });
+  }
   const [total, verified, pending, communesCovered, activeQr, scans30d] = await Promise.all([
     prisma.address.count(),
     prisma.address.count({ where: { verified: true } }),

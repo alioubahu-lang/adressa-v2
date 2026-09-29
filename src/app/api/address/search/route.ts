@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import type { Prisma } from "@prisma/client";
 
 // GET /api/address/search?q=SN-SBK-001 | Sébikotane | Tanghor | nom de rue
 export async function GET(req: NextRequest) {
@@ -10,9 +13,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ items: [] });
   }
 
+  const session = await getServerSession(authOptions);
+  const user = session?.user as any;
+  const savedAgent = user?.role === "AGENT" && user.id
+    ? await prisma.user.findUnique({ where: { id: user.id }, select: { communeId: true } })
+    : null;
+  const agentFilter: Prisma.AddressWhereInput = user?.role === "AGENT"
+    ? { createdById: user.id, communeId: savedAgent?.communeId ?? "__no_assignment__", verified: false, status: { in: ["BROUILLON", "COLLECTE", "A_VERIFIER"] as any[] } }
+    : { status: "PUBLIE" };
+
   const items = await prisma.address.findMany({
     where: {
-      status: "PUBLIE",
+      ...agentFilter,
       OR: [
         { adresssaId: { contains: q, mode: "insensitive" } },
         { commune: { name: { contains: q, mode: "insensitive" } } },

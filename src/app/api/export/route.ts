@@ -26,6 +26,9 @@ export async function GET(req: NextRequest) {
   if (!session) {
     return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
   }
+  if ((session.user as any)?.role === "AGENT") {
+    return NextResponse.json({ error: "L’export des données communales n’est pas disponible dans l’espace terrain." }, { status: 403 });
+  }
 
   const { searchParams } = new URL(req.url);
   const format = searchParams.get("format") === "geojson" ? "geojson" : "csv";

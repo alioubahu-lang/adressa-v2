@@ -8,6 +8,16 @@ import { canAccessView, type Role } from "@/lib/permissions";
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  if (pathname.startsWith("/dashboard") && token?.role === "AGENT") {
+    const isAgentDashboard = pathname === "/dashboard/terrain";
+    const isNewAddress = pathname === "/dashboard/addresses/new";
+    const isAddressEdit = /^\/dashboard\/addresses\/[^/]+\/edit$/.test(pathname);
+    if (!isAgentDashboard && !isNewAddress && !isAddressEdit) {
+      return NextResponse.redirect(new URL("/dashboard/terrain", req.url));
+    }
+  }
+
   const isFiscalRoute = pathname.startsWith("/dashboard/fiscal");
   const isLogisticsRoute = pathname.startsWith("/dashboard/logistics");
 
@@ -15,7 +25,6 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   if (!token) {
     const loginUrl = new URL("/login", req.url);
     return NextResponse.redirect(loginUrl);
@@ -34,5 +43,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/fiscal/:path*", "/dashboard/logistics/:path*"]
+  matcher: ["/dashboard/:path*"]
 };

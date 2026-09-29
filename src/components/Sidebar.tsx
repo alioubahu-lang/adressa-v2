@@ -15,9 +15,15 @@ const municipalItems = [
 ];
 
 const logisticsItems = [{ href: "/dashboard/logistics", label: "ADRESSA ROUTE" }];
+const agentItems = [
+  { href: "/dashboard/terrain", label: "Mon espace terrain" },
+  { href: "/dashboard/addresses/new", label: "Nouvelle saisie" },
+  { href: "/dashboard/terrain#mes-saisies", label: "Mes saisies" }
+];
 
 export function Sidebar({ role }: { role?: Role }) {
   let items = operationalItems;
+  if (role === "AGENT") items = agentItems;
   if (role === "MUNICIPAL_ADMIN" || role === "MUNICIPAL") items = municipalItems;
   if (role === "LOGISTICS_PARTNER") items = logisticsItems;
 
@@ -29,7 +35,7 @@ export function Sidebar({ role }: { role?: Role }) {
         ]
       : [];
 
-  const settingsItem = { href: "/dashboard/settings", label: "Paramètres" };
+  const settingsItem = role === "AGENT" ? null : { href: "/dashboard/settings", label: "Paramètres" };
 
   return (
     <aside className="hidden w-60 shrink-0 flex-col border-r border-black/5 bg-white px-4 py-6 md:flex">
@@ -43,7 +49,7 @@ export function Sidebar({ role }: { role?: Role }) {
         <span className="text-lg font-black tracking-widest text-adressa-deep">ADRESSA</span>
       </Link>
       <nav className="flex flex-col gap-1">
-        {[...items, ...extra, settingsItem].map((item) => (
+        {[...items, ...extra, ...(settingsItem ? [settingsItem] : [])].map((item) => (
           <Link
             key={item.href + item.label}
             href={item.href}

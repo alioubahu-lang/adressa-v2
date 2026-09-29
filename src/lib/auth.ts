@@ -30,7 +30,8 @@ export const authOptions: AuthOptions = {
           id: user.id,
           name: user.name,
           email: user.email,
-          role: user.role
+          role: user.role,
+          communeId: user.communeId
         } as any;
       }
     })
@@ -40,6 +41,12 @@ export const authOptions: AuthOptions = {
       if (user) {
         token.role = (user as any).role;
         token.id = (user as any).id;
+        token.communeId = (user as any).communeId;
+      }
+      // Hydrate commune assignment into sessions created before this field existed.
+      if (!token.communeId && token.id) {
+        const savedUser = await prisma.user.findUnique({ where: { id: String(token.id) }, select: { communeId: true } });
+        if (savedUser?.communeId) token.communeId = savedUser.communeId;
       }
       return token;
     },
@@ -47,6 +54,7 @@ export const authOptions: AuthOptions = {
       if (session.user) {
         (session.user as any).role = token.role;
         (session.user as any).id = token.id;
+        (session.user as any).communeId = token.communeId;
       }
       return session;
     }

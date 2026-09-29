@@ -18,6 +18,14 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: "Adresse introuvable." }, { status: 404 });
   }
 
+  const user = session.user as any;
+  if (user.role === "AGENT") {
+    const savedUser = user.id ? await prisma.user.findUnique({ where: { id: user.id }, select: { communeId: true } }) : null;
+    if (address.createdById !== user.id || address.communeId !== savedUser?.communeId || address.verified || ["VERIFIE", "PUBLIE"].includes(address.status)) {
+      return NextResponse.json({ error: "Cette adresse ne fait pas partie de vos saisies modifiables." }, { status: 404 });
+    }
+  }
+
   return NextResponse.json(address);
 }
 
@@ -42,6 +50,16 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ error: "Adresse introuvable." }, { status: 404 });
   }
 
+  const user = session?.user as any;
+  let agentCommuneId: string | null = null;
+  if (role === "AGENT") {
+    const savedUser = user?.id ? await prisma.user.findUnique({ where: { id: user.id }, select: { communeId: true } }) : null;
+    agentCommuneId = savedUser?.communeId ?? null;
+    if (existing.createdById !== user?.id || existing.communeId !== savedUser?.communeId || existing.verified || ["VERIFIE", "PUBLIE"].includes(existing.status)) {
+      return NextResponse.json({ error: "Cette adresse ne fait pas partie de vos saisies modifiables." }, { status: 404 });
+    }
+  }
+
   const userId = (session?.user as any)?.id as string | undefined;
 
   // Champs modifiables — on ignore volontairement adresssaId (jamais modifiable après création)
@@ -54,8 +72,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     "landmark",
     "description",
     "photoUrl",
-    "status",
-    "verified",
+    ...(role === "AGENT" ? [] : ["status", "verified"]),
     "streetId",
     "buildingNumber",
     "buildingType",
@@ -68,7 +85,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     "businessRegister",
     "plateStatus",
     "gpsAccuracyMeters",
-    "taxStatus"
+    ...(role === "AGENT" ? [] : ["taxStatus"])
   ] as const;
 
   const data: Record<string, unknown> = {};
@@ -90,6 +107,22 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 
   data.updatedById = userId ?? null;
+
+  if (role === "AGENT") {
+    const updatedCount = await prisma.$transaction(async (tx) => {
+      const result = await tx.address.updateMany({
+        where: { id: existing.id, createdById: userId, communeId: agentCommuneId ?? "__no_assignment__", verified: false, status: { in: ["BROUILLON", "COLLECTE", "A_VERIFIER"] } },
+        data: data as any
+      });
+      if (result.count && historyEntries.length) {
+        await tx.addressHistory.createMany({ data: historyEntries.map((entry) => ({ ...entry, addressId: existing.id, userId: userId ?? null })) });
+      }
+      return result.count;
+    });
+    if (!updatedCount) return NextResponse.json({ error: "Cette adresse n’est plus modifiable dans votre espace terrain." }, { status: 404 });
+    const updated = await prisma.address.findUnique({ where: { id: existing.id } });
+    return NextResponse.json(updated);
+  }
 
   const updated = await prisma.address.update({
     where: { id: existing.id },

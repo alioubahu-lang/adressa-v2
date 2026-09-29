@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 
 type AddressDetail = {
@@ -19,6 +20,9 @@ type AddressDetail = {
 
 export default function EditAddressPage({ params }: { params: { id: string } }) {
   const router = useRouter();
+  const { data: session, status: sessionStatus } = useSession();
+  const isAgent = sessionStatus === "authenticated" && (session?.user as any)?.role === "AGENT";
+  const canManageStatus = sessionStatus === "authenticated" && !isAgent;
   const [address, setAddress] = useState<AddressDetail | null>(null);
   const [notFoundError, setNotFoundError] = useState(false);
 
@@ -74,7 +78,7 @@ export default function EditAddressPage({ params }: { params: { id: string } }) 
       setError("Suppression impossible (droits insuffisants ou erreur serveur).");
       return;
     }
-    router.push("/dashboard/addresses");
+    router.push(isAgent ? "/dashboard/terrain" : "/dashboard/addresses");
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -123,7 +127,7 @@ export default function EditAddressPage({ params }: { params: { id: string } }) 
     return (
       <div className="mx-auto max-w-2xl">
         <p className="text-red-600">Adresse introuvable.</p>
-        <Link href="/dashboard/addresses" className="mt-4 inline-block text-adressa-green underline">
+        <Link href={isAgent ? "/dashboard/terrain" : "/dashboard/addresses"} className="mt-4 inline-block text-adressa-green underline">
           Retour à la liste
         </Link>
       </div>
@@ -138,7 +142,7 @@ export default function EditAddressPage({ params }: { params: { id: string } }) 
     <div className="mx-auto max-w-2xl">
       <h1 className="mb-1 text-2xl font-bold text-adressa-deep">Modifier {address.adresssaId}</h1>
       <p className="mb-6 text-sm text-adressa-ink/60">
-        {address.commune.name} · {address.neighborhood.name}
+        {address.commune.name} · {address.neighborhood.name} {isAgent && <span>· Saisie en attente de validation</span>}
       </p>
 
       <form onSubmit={handleSubmit} className="card space-y-4">
@@ -202,7 +206,7 @@ export default function EditAddressPage({ params }: { params: { id: string } }) 
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        {canManageStatus && <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="mb-1 block text-sm font-medium text-adressa-ink/70">Statut</label>
             <select
@@ -223,7 +227,7 @@ export default function EditAddressPage({ params }: { params: { id: string } }) 
               Adresse vérifiée
             </label>
           </div>
-        </div>
+        </div>}
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -231,13 +235,11 @@ export default function EditAddressPage({ params }: { params: { id: string } }) 
           <button type="submit" disabled={loading} className="btn-primary flex-1">
             {loading ? "Enregistrement…" : "Enregistrer les modifications"}
           </button>
-          <Link href={`/a/${address.adresssaId}`} className="btn-secondary">
-            Voir la fiche
-          </Link>
+          {canManageStatus ? <Link href={`/a/${address.adresssaId}`} className="btn-secondary">Voir la fiche</Link> : <Link href="/dashboard/terrain" className="btn-secondary">Retour à mes saisies</Link>}
         </div>
       </form>
 
-      <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4">
+      {canManageStatus && <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4">
         <p className="text-sm font-semibold text-red-700">Zone dangereuse</p>
         <p className="mt-1 text-xs text-red-600/80">
           Supprime définitivement cette adresse, son QR code et son historique. Action irréversible.
@@ -250,7 +252,7 @@ export default function EditAddressPage({ params }: { params: { id: string } }) 
         >
           🗑️ Supprimer cette adresse
         </button>
-      </div>
+      </div>}
     </div>
   );
 }

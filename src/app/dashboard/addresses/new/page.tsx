@@ -72,6 +72,7 @@ export default function NewAddressPage() {
       .then((data) => {
         const items = (data.items ?? []) as Commune[];
         setCommunes(items);
+        setCommuneId((current) => current || (items.length === 1 ? items[0].id : ""));
         localStorage.setItem("adressa:communes", JSON.stringify(items));
       })
       .catch(() => undefined);
@@ -171,7 +172,7 @@ export default function NewAddressPage() {
       ...(storefrontPhoto ? [{ field: "businessPhotoUrl", file: storefrontPhoto.file }] : []),
       ...(plateStatus === "POSEE" && platePhoto ? [{ field: "platePhotoUrl", file: platePhoto.file }] : [])
     ]);
-    router.push("/dashboard/addresses?queued=1");
+    router.push("/dashboard/terrain?queued=1");
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -262,7 +263,7 @@ export default function NewAddressPage() {
         })
       });
       if (response.ok) {
-        router.push("/dashboard/addresses?created=1");
+        router.push("/dashboard/terrain?created=1");
         return;
       }
       if (response.status >= 500) {
@@ -401,9 +402,9 @@ export default function NewAddressPage() {
       </form>
 
       <nav aria-label="Navigation terrain" className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-3 border-t border-black/10 bg-white/95 px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:hidden">
-        <Link href="/map" className="flex flex-col items-center gap-1 py-1 text-xs text-adressa-ink/70"><MapPin size={18} />Carte</Link>
+        <Link href="/dashboard/terrain" className="flex flex-col items-center gap-1 py-1 text-xs text-adressa-ink/70"><MapPin size={18} />Espace</Link>
         <span aria-current="page" className="flex flex-col items-center gap-1 py-1 text-xs font-semibold text-adressa-green"><Camera size={18} />Nouvelle</span>
-        <Link href="/dashboard/addresses" className="flex flex-col items-center gap-1 py-1 text-xs text-adressa-ink/70"><ClipboardList size={18} />Adresses</Link>
+        <Link href="/dashboard/terrain#mes-saisies" className="flex flex-col items-center gap-1 py-1 text-xs text-adressa-ink/70"><ClipboardList size={18} />Mes saisies</Link>
       </nav>
     </div>
   );

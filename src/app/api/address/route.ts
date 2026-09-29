@@ -59,10 +59,18 @@ export async function GET(req: NextRequest) {
   const pageSize = Math.min(100, Math.max(1, Number(searchParams.get("pageSize") ?? "20")));
   const status = searchParams.get("status") ?? undefined;
   const communeId = searchParams.get("communeId") ?? undefined;
+  const user = session.user as any;
+  const savedUser = user.role === "AGENT" && user.id
+    ? await prisma.user.findUnique({ where: { id: user.id }, select: { communeId: true } })
+    : null;
+  const agentScope = user.role === "AGENT"
+    ? { createdById: user.id, communeId: savedUser?.communeId ?? "__no_assignment__", verified: false, status: { in: ["BROUILLON", "COLLECTE", "A_VERIFIER"] as any[] } }
+    : {};
 
   const where = {
-    ...(status ? { status: status as any } : {}),
-    ...(communeId ? { communeId } : {})
+    ...agentScope,
+    ...(user.role === "AGENT" ? { status: agentScope.status } : status ? { status: status as any } : {}),
+    ...(user.role === "AGENT" ? { communeId: agentScope.communeId } : communeId ? { communeId } : {})
   };
 
   const [items, total] = await Promise.all([
@@ -82,7 +90,8 @@ export async function GET(req: NextRequest) {
 // POST /api/address — création (agents et plus)
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!canEditAddress((session?.user as any)?.role)) {
+  if (!session) return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
+  if (!canEditAddress((session.user as any)?.role)) {
     return NextResponse.json({ error: "Non autorisé." }, { status: 403 });
   }
 
@@ -92,10 +101,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
   const data = parsed.data;
+  const sessionUser = session.user as any;
+  const savedUser = sessionUser.role === "AGENT" && sessionUser.id
+    ? await prisma.user.findUnique({ where: { id: sessionUser.id }, select: { communeId: true } })
+    : null;
+  if (sessionUser.role === "AGENT" && (!savedUser?.communeId || data.communeId !== savedUser.communeId)) {
+    return NextResponse.json({ error: "Cette commune ne correspond pas à votre zone d’affectation." }, { status: 403 });
+  }
 
   if (data.clientRequestId) {
     const existingRequest = await prisma.address.findUnique({ where: { clientRequestId: data.clientRequestId } });
-    if (existingRequest) return NextResponse.json(existingRequest);
+    if (existingRequest) {
+      if (sessionUser.role === "AGENT" && (
+        existingRequest.createdById !== sessionUser.id ||
+        existingRequest.communeId !== savedUser?.communeId ||
+        existingRequest.verified ||
+        !["BROUILLON", "COLLECTE", "A_VERIFIER"].includes(existingRequest.status)
+      )) {
+        return NextResponse.json({ error: "Identifiant de saisie déjà utilisé." }, { status: 409 });
+      }
+      return NextResponse.json(existingRequest);
+    }
   }
 
   const [country, commune] = await Promise.all([
@@ -177,7 +203,17 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     if (data.clientRequestId && (error as { code?: string }).code === "P2002") {
       const existingRequest = await prisma.address.findUnique({ where: { clientRequestId: data.clientRequestId } });
-      if (existingRequest) return NextResponse.json(existingRequest);
+      if (existingRequest) {
+        if (sessionUser.role === "AGENT" && (
+          existingRequest.createdById !== sessionUser.id ||
+          existingRequest.communeId !== savedUser?.communeId ||
+          existingRequest.verified ||
+          !["BROUILLON", "COLLECTE", "A_VERIFIER"].includes(existingRequest.status)
+        )) {
+          return NextResponse.json({ error: "Identifiant de saisie déjà utilisé." }, { status: 409 });
+        }
+        return NextResponse.json(existingRequest);
+      }
     }
     throw error;
   }

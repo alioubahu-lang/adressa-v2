@@ -45,6 +45,7 @@ export function hasPermission(role: Role | undefined, permission: Permission): b
 export type DashboardView = "municipal" | "logistics" | "operationnel";
 
 export function getDefaultDashboardView(role: Role | undefined): DashboardView {
+  if (role === "AGENT") return "operationnel";
   if (role === "MUNICIPAL_ADMIN" || role === "MUNICIPAL") return "municipal";
   if (role === "LOGISTICS_PARTNER") return "logistics";
   return "operationnel"; // SUPER_ADMIN, ADMIN, AGENT, VIEWER
