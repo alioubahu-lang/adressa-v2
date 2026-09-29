@@ -11,6 +11,7 @@ type ExportAddress = {
   landmark: string | null;
   buildingType: string | null;
   status: string;
+  taxStatus: string;
   verified: boolean;
   createdAt: Date;
   commune: { name: string };
@@ -30,17 +31,24 @@ export async function GET(req: NextRequest) {
   const format = searchParams.get("format") === "geojson" ? "geojson" : "csv";
   const communeId = searchParams.get("communeId") ?? undefined;
   const status = searchParams.get("status") ?? undefined;
+  const taxStatus = searchParams.get("taxStatus") ?? undefined;
+  const neighborhood = searchParams.get("neighborhood") ?? undefined;
+  const visibleIds = searchParams.get("ids");
   const q = searchParams.get("q") ?? undefined;
 
   const addresses: ExportAddress[] = await prisma.address.findMany({
     where: {
       ...(communeId ? { communeId } : {}),
       ...(status ? { status: status as any } : {}),
+      ...(taxStatus ? { taxStatus: taxStatus as any } : {}),
+      ...(neighborhood ? { neighborhood: { name: neighborhood } } : {}),
+      ...(visibleIds !== null ? { id: { in: visibleIds ? visibleIds.split(",") : [] } } : {}),
       ...(q
         ? {
             OR: [
               { adresssaId: { contains: q, mode: "insensitive" as const } },
-              { neighborhood: { name: { contains: q, mode: "insensitive" as const } } }
+              { neighborhood: { name: { contains: q, mode: "insensitive" as const } } },
+              { commune: { name: { contains: q, mode: "insensitive" as const } } }
             ]
           }
         : {})
@@ -64,6 +72,7 @@ export async function GET(req: NextRequest) {
           plusCode: a.plusCode,
           buildingType: a.buildingType,
           status: a.status,
+          taxStatus: a.taxStatus,
           verified: a.verified,
           createdAt: a.createdAt
         }
@@ -88,6 +97,7 @@ export async function GET(req: NextRequest) {
     "landmark",
     "buildingType",
     "status",
+    "taxStatus",
     "verified",
     "createdAt"
   ];
@@ -107,13 +117,14 @@ export async function GET(req: NextRequest) {
       a.landmark ?? "",
       a.buildingType ?? "",
       a.status,
+      a.taxStatus,
       a.verified ? "oui" : "non",
       a.createdAt.toISOString()
     ]
       .map(escapeCsv)
-      .join(",")
+      .join(";")
   );
-  const csv = [headers.join(","), ...rows].join("\n");
+  const csv = "\uFEFF" + [headers.join(";"), ...rows].join("\r\n");
 
   return new NextResponse(csv, {
     headers: {

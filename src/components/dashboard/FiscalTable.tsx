@@ -31,23 +31,43 @@ const bulkOptions = [
   { value: "NON_RENSEIGNE", label: "Non renseigné" }
 ];
 
-export function FiscalTable({ rows }: { rows: FiscalRow[] }) {
+type TaxCounts = Record<string, number>;
+
+export function FiscalTable({ rows, initialTaxCounts }: { rows: FiscalRow[]; initialTaxCounts: TaxCounts }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [neighborhoodFilter, setNeighborhoodFilter] = useState("");
   const [taxFilter, setTaxFilter] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [bulkValue, setBulkValue] = useState("IMPOSE");
+  const [tableRows, setTableRows] = useState(rows);
   const [applying, setApplying] = useState(false);
+  const [taxCounts, setTaxCounts] = useState(initialTaxCounts);
+
+  function updateTaxCount(previous: string, next: string, amount = 1) {
+    if (previous === next) return;
+    setTaxCounts((current) => ({
+      ...current,
+      [previous]: Math.max(0, (current[previous] ?? 0) - amount),
+      [next]: (current[next] ?? 0) + amount
+    }));
+  }
+
+  function exportHref(format: "csv" | "geojson") {
+    const params = new URLSearchParams({ format, ids: filtered.map((row) => row.id).join(",") });
+    if (query.trim()) params.set("q", query.trim());
+    if (neighborhoodFilter) params.set("neighborhood", neighborhoodFilter);
+    if (taxFilter) params.set("taxStatus", taxFilter);
+    return `/api/export?${params.toString()}`;
+  }
 
   const neighborhoods = useMemo(
-    () => Array.from(new Set(rows.map((r) => r.neighborhood.name))).sort(),
-    [rows]
+    () => Array.from(new Set(tableRows.map((r) => r.neighborhood.name))).sort(),
+    [tableRows]
   );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return rows.filter((r) => {
+    return tableRows.filter((r) => {
       const matchesQuery =
         !q ||
         r.adresssaId.toLowerCase().includes(q) ||
@@ -57,7 +77,7 @@ export function FiscalTable({ rows }: { rows: FiscalRow[] }) {
       const matchesTax = !taxFilter || r.taxStatus === taxFilter;
       return matchesQuery && matchesNeighborhood && matchesTax;
     });
-  }, [rows, query, neighborhoodFilter, taxFilter]);
+  }, [tableRows, query, neighborhoodFilter, taxFilter]);
 
   const allFilteredSelected = filtered.length > 0 && filtered.every((r) => selected.has(r.id));
 
@@ -77,23 +97,50 @@ export function FiscalTable({ rows }: { rows: FiscalRow[] }) {
     });
   }
 
-  async function applyBulk() {
+  async function applyBulkFor(taxStatus: string) {
     if (selected.size === 0) return;
     setApplying(true);
-    const res = await fetch("/api/address/bulk-tax-status", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ids: Array.from(selected), taxStatus: bulkValue })
-    });
-    setApplying(false);
-    if (res.ok) {
-      setSelected(new Set());
-      router.refresh();
+    try {
+      const res = await fetch("/api/address/bulk-tax-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: Array.from(selected), taxStatus })
+      });
+      if (res.ok) {
+        const ids = new Set(selected);
+        const changes = tableRows.filter((row) => ids.has(row.id) && row.taxStatus !== taxStatus);
+        for (const row of changes) updateTaxCount(row.taxStatus, taxStatus);
+        setTableRows((current) => current.map((row) => ids.has(row.id) ? { ...row, taxStatus } : row));
+        setSelected(new Set());
+        router.refresh();
+      }
+    } finally {
+      setApplying(false);
     }
   }
 
   return (
     <div>
+      <div className="mb-3 grid grid-cols-2 gap-3 md:grid-cols-4">
+        {[
+          ["IMPOSE", "Imposées", "text-green-700"],
+          ["IMPAYE", "Impayées", "text-red-700"],
+          ["EXONERE", "Exonérées", "text-sky-700"],
+          ["NON_RENSEIGNE", "Non renseignées", "text-amber-700"]
+        ].map(([key, label, color]) => (
+          <div key={key} className="card text-center">
+            <div className={`text-2xl font-black ${color}`}>{taxCounts[key] ?? 0}</div>
+            <div className="mt-1 text-xs text-adressa-ink/60">{label}</div>
+          </div>
+        ))}
+      </div>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs text-adressa-ink/50">Compteurs à l’échelle de la commune, actualisés après chaque modification.</p>
+        <div className="flex gap-2">
+          <a href={exportHref("csv")} className="btn-secondary text-sm">Export CSV</a>
+          <a href={exportHref("geojson")} className="btn-secondary text-sm">Export GeoJSON</a>
+        </div>
+      </div>
       {/* Avertissement légal */}
       <div className="mb-4 flex items-start gap-3 rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900">
         <Info size={18} className="mt-0.5 shrink-0" />
@@ -141,24 +188,16 @@ export function FiscalTable({ rows }: { rows: FiscalRow[] }) {
 
       {/* Barre d'action groupée */}
       {selected.size > 0 && (
-        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl bg-adressa-light px-4 py-3">
+        <div className="sticky bottom-4 z-20 mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-adressa-green/15 bg-white/95 px-4 py-3 shadow-lg backdrop-blur">
           <span className="text-sm font-semibold text-adressa-deep">{selected.size} sélectionnée(s)</span>
-          <select
-            value={bulkValue}
-            onChange={(e) => setBulkValue(e.target.value)}
-            className="rounded-lg border border-black/10 px-3 py-1.5 text-sm"
-          >
-            {bulkOptions.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-          <button type="button" onClick={applyBulk} disabled={applying} className="btn-primary text-sm">
-            {applying ? "Application…" : "Définir le statut fiscal pour la sélection"}
-          </button>
-          <button type="button" onClick={() => setSelected(new Set())} className="text-sm text-adressa-ink/50 underline">
-            Annuler la sélection
+          <span className="text-sm text-adressa-ink/70">Passer la sélection en :</span>
+          {bulkOptions.map((o) => (
+            <button key={o.value} type="button" onClick={() => void applyBulkFor(o.value)} disabled={applying} className="btn-secondary text-sm disabled:opacity-50">
+              {o.label}
+            </button>
+          ))}
+          <button type="button" onClick={() => setSelected(new Set())} className="ml-auto text-sm text-adressa-ink/50 underline">
+            Annuler
           </button>
         </div>
       )}
@@ -167,7 +206,7 @@ export function FiscalTable({ rows }: { rows: FiscalRow[] }) {
         <table className="w-full text-left text-sm">
           <thead className="bg-adressa-light text-adressa-deep">
             <tr>
-              <th className="w-10 px-4 py-3">
+              <th className="w-12 px-3 py-3 text-center">
                 <input type="checkbox" checked={allFilteredSelected} onChange={toggleAll} />
               </th>
               <th className="px-4 py-3">ID ADRESSA</th>
@@ -180,7 +219,7 @@ export function FiscalTable({ rows }: { rows: FiscalRow[] }) {
           <tbody>
             {filtered.map((r) => (
               <tr key={r.id} className="border-t border-black/5">
-                <td className="px-4 py-3">
+                <td className="px-3 py-3 text-center align-middle">
                   <input type="checkbox" checked={selected.has(r.id)} onChange={() => toggleOne(r.id)} />
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 font-semibold text-adressa-green">{r.adresssaId}</td>
@@ -190,7 +229,7 @@ export function FiscalTable({ rows }: { rows: FiscalRow[] }) {
                   <StatusBadge status={r.status} />
                 </td>
                 <td className="px-4 py-3">
-                  <TaxStatusSelect adresssaId={r.adresssaId} initialValue={r.taxStatus} meta={r.taxMeta} />
+                  <TaxStatusSelect adresssaId={r.adresssaId} initialValue={r.taxStatus} meta={r.taxMeta} onSaved={(value) => { updateTaxCount(r.taxStatus, value); setTableRows((current) => current.map((row) => row.id === r.id ? { ...row, taxStatus: value } : row)); }} />
                 </td>
               </tr>
             ))}

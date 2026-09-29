@@ -74,14 +74,6 @@ export default async function FiscalDashboardPage() {
             Dashboard analytique et gestion fiscale, réservés aux comptes municipaux.
           </p>
         </div>
-        <div className="flex gap-2">
-          <a href="/api/export?format=csv" className="btn-secondary text-sm">
-            Export CSV
-          </a>
-          <a href="/api/export?format=geojson" className="btn-secondary text-sm">
-            Export GeoJSON
-          </a>
-        </div>
       </div>
 
       {/* Groupe 1 — Métriques globales */}
@@ -92,42 +84,9 @@ export default async function FiscalDashboardPage() {
         <KpiCard label="Avancement pose des plaques" value={`${plaquesRate}%`} Icon={TrendingUp} />
       </div>
 
-      {/* Groupe 2 — Métriques fiscales */}
-      <h2 className="mb-2 mt-6 text-xs font-semibold uppercase tracking-wide text-adressa-ink/50">Métriques fiscales</h2>
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <div className="card text-center">
-          <div className="text-2xl font-black text-green-700">
-            {imposees} <span className="text-base font-medium text-adressa-ink/40">/ {total}</span>
-          </div>
-          <div className="mt-1 text-xs text-adressa-ink/60">Imposées</div>
-        </div>
-        <div className="card text-center">
-          <div className="text-2xl font-black text-red-700">
-            {impayees} <span className="text-base font-medium text-adressa-ink/40">/ {total}</span>
-          </div>
-          <div className="mt-1 text-xs text-adressa-ink/60">Impayées</div>
-        </div>
-        <div className="card text-center">
-          <div className="text-2xl font-black text-sky-700">
-            {exonerees} <span className="text-base font-medium text-adressa-ink/40">/ {total}</span>
-          </div>
-          <div className="mt-1 text-xs text-adressa-ink/60">Exonérées</div>
-        </div>
-        <div className="card text-center">
-          <div className="text-2xl font-black text-amber-700">
-            {nonRenseignees} <span className="text-base font-medium text-adressa-ink/40">/ {total}</span>
-          </div>
-          <div className="mt-1 text-xs text-adressa-ink/60">Non renseignées</div>
-          {nonRenseignees > 0 && (
-            <span className="mt-2 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-800">
-              À renseigner
-            </span>
-          )}
-        </div>
-      </div>
-
       <div className="mt-6">
-        <FiscalTable rows={rows} />
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-adressa-ink/50">Métriques fiscales</h2>
+        <FiscalTable rows={rows} initialTaxCounts={{ IMPOSE: imposees, IMPAYE: impayees, EXONERE: exonerees, NON_RENSEIGNE: nonRenseignees }} />
       </div>
     </div>
   );
