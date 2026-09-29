@@ -3,6 +3,7 @@ import { Truck, ShoppingCart, Car, Building2, Landmark, ShieldCheck, Wifi, Wrenc
 
 export type Sector = {
   id: string;
+  group: "logistique" | "finance" | "infrastructure";
   title: string;
   Icon: LucideIcon;
   problem: string;
@@ -16,6 +17,7 @@ export type Sector = {
 export const sectors: Sector[] = [
   {
     id: "livraison",
+    group: "logistique",
     title: "Livraison & Logistique",
     Icon: Truck,
     problem:
@@ -42,6 +44,7 @@ export const sectors: Sector[] = [
   },
   {
     id: "ecommerce",
+    group: "logistique",
     title: "E-commerce & Webmasters",
     Icon: ShoppingCart,
     problem: "Une adresse tapée approximativement au moment de payer pousse souvent le client à abandonner son panier.",
@@ -61,6 +64,7 @@ export const sectors: Sector[] = [
   },
   {
     id: "transport",
+    group: "logistique",
     title: "Transport & VTC",
     Icon: Car,
     problem: "Le chauffeur perd du temps à chercher le point de prise en charge exact.",
@@ -79,6 +83,7 @@ export const sectors: Sector[] = [
   },
   {
     id: "immobilier",
+    group: "infrastructure",
     title: "Immobilier & BTP",
     Icon: Building2,
     problem: "Les biens fonciers sont difficiles à identifier et à suivre dans le temps.",
@@ -100,6 +105,7 @@ export const sectors: Sector[] = [
   },
   {
     id: "banques",
+    group: "finance",
     title: "Banques & Fintechs",
     Icon: Landmark,
     problem: "Vérifier l'adresse physique d'un client (KYC) prend du temps et repose sur des justificatifs incertains.",
@@ -120,6 +126,7 @@ export const sectors: Sector[] = [
   },
   {
     id: "assurances",
+    group: "finance",
     title: "Assurances",
     Icon: ShieldCheck,
     problem: "Un sinistre mal localisé ralentit l'évaluation du risque et l'intervention.",
@@ -140,6 +147,7 @@ export const sectors: Sector[] = [
   },
   {
     id: "telecom",
+    group: "infrastructure",
     title: "Télécommunications & Énergie",
     Icon: Wifi,
     problem: "Un technicien envoyé « dans le quartier » repart parfois sans avoir trouvé le bon domicile.",
@@ -159,6 +167,7 @@ export const sectors: Sector[] = [
   },
   {
     id: "services",
+    group: "logistique",
     title: "Services à Domicile",
     Icon: Wrench,
     problem: "Un artisan ou prestataire arrive en retard, ou ne trouve pas le bon logement.",
