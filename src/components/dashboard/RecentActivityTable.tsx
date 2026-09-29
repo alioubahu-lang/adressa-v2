@@ -44,7 +44,7 @@ export function RecentActivityTable({ rows }: { rows: RecentAddressRow[] }) {
           Voir toutes les adresses
         </Link>
       </div>
-      <table className="w-full text-left text-sm">
+      <table className="w-full min-w-[840px] text-left text-sm">
         <thead className="bg-adressa-light text-adressa-deep">
           <tr>
             <th className="px-4 py-3">Code ADRESSA</th>
