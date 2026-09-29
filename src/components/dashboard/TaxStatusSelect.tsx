@@ -23,26 +23,33 @@ export type TaxStatusMeta = { lastModifiedAt: string | null; lastModifiedBy: str
 export function TaxStatusSelect({
   adresssaId,
   initialValue,
-  meta
+  meta,
+  onSaved
 }: {
   adresssaId: string;
   initialValue: string;
   meta?: TaxStatusMeta;
+  onSaved?: (value: string) => void;
 }) {
   const router = useRouter();
   const [value, setValue] = useState(initialValue);
   const [saving, setSaving] = useState(false);
 
   async function handleChange(newValue: string) {
-    setValue(newValue);
     setSaving(true);
-    const res = await fetch(`/api/address/${adresssaId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ taxStatus: newValue })
-    });
-    setSaving(false);
-    if (res.ok) router.refresh();
+    try {
+      const res = await fetch(`/api/address/${adresssaId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ taxStatus: newValue })
+      });
+      if (!res.ok) return;
+      setValue(newValue);
+      onSaved?.(newValue);
+      router.refresh();
+    } finally {
+      setSaving(false);
+    }
   }
 
   const tooltip =
@@ -56,7 +63,7 @@ export function TaxStatusSelect({
       onChange={(e) => handleChange(e.target.value)}
       disabled={saving}
       title={tooltip}
-      className={`rounded-lg px-2 py-1 text-xs font-semibold transition ${styles[value] ?? ""}`}
+      className={`w-full min-w-[130px] rounded-lg border px-3 py-2 text-xs font-semibold transition ${styles[value] ?? ""}`}
     >
       {options.map((o) => (
         <option key={o.value} value={o.value}>
