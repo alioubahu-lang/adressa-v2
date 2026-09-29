@@ -41,6 +41,10 @@ export function hasPermission(role: Role | undefined, permission: Permission): b
   return ROLE_PERMISSIONS[role]?.includes(permission) ?? false;
 }
 
+export function canManageAgentProfiles(role: Role | undefined): boolean {
+  return role === "ADMIN" || role === "SUPER_ADMIN";
+}
+
 // Détermine quelle vue de dashboard afficher par défaut pour un rôle donné.
 export type DashboardView = "municipal" | "logistics" | "operationnel";
 

@@ -31,7 +31,8 @@ export const authOptions: AuthOptions = {
           name: user.name,
           email: user.email,
           role: user.role,
-          communeId: user.communeId
+          communeId: user.communeId,
+          image: user.profilePhotoUrl
         } as any;
       }
     })
@@ -42,6 +43,7 @@ export const authOptions: AuthOptions = {
         token.role = (user as any).role;
         token.id = (user as any).id;
         token.communeId = (user as any).communeId;
+        token.profilePhotoUrl = (user as any).image;
       }
       // Hydrate commune assignment into sessions created before this field existed.
       if (!token.communeId && token.id) {
@@ -55,6 +57,7 @@ export const authOptions: AuthOptions = {
         (session.user as any).role = token.role;
         (session.user as any).id = token.id;
         (session.user as any).communeId = token.communeId;
+        session.user.image = token.profilePhotoUrl as string | null | undefined;
       }
       return session;
     }

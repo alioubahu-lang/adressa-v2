@@ -29,7 +29,7 @@ export default async function AgentTerrainPage({ searchParams }: { searchParams?
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const commonWhere = { createdById: user.id, communeId: communeId ?? "__no_assignment__" };
-  const [pending, toCorrect, validatedHistory, addresses, commune] = await Promise.all([
+  const [pending, toCorrect, validatedHistory, addresses, latestComments, commune] = await Promise.all([
     prisma.address.count({ where: { ...commonWhere, verified: false, status: { in: [...pendingStatuses] } } }),
     prisma.address.count({ where: { ...commonWhere, verified: false, status: "BROUILLON" } }),
     prisma.addressHistory.findMany({
@@ -42,6 +42,11 @@ export default async function AgentTerrainPage({ searchParams }: { searchParams?
       select: { id: true, adresssaId: true, latitude: true, longitude: true, status: true, createdAt: true, landmark: true,
         neighborhood: { select: { name: true } }, commune: { select: { name: true } } },
       orderBy: { createdAt: "desc" }, take: 50
+    }),
+    prisma.addressComment.findMany({
+      where: { address: { ...commonWhere, verified: false, status: { in: [...pendingStatuses] } } },
+      orderBy: { createdAt: "desc" }, take: 5,
+      select: { id: true, message: true, authorName: true, createdAt: true, address: { select: { adresssaId: true } } }
     }),
     communeId ? prisma.commune.findUnique({ where: { id: communeId }, select: { name: true } }) : null
   ]);
@@ -120,7 +125,7 @@ export default async function AgentTerrainPage({ searchParams }: { searchParams?
       <section className="grid gap-4 lg:grid-cols-3">
         <SuggestionCard Icon={CheckCircle2} title="Formulaire guidé" text="Une collecte par étapes : position, bâtiment, commerce et photos." />
         <SuggestionCard Icon={WifiOff} title="Mode hors ligne" text="Les saisies et photos restent sur cet appareil puis se synchronisent au retour du réseau." />
-        <div className="rounded-2xl border border-dashed border-amber-300 bg-amber-50/70 p-4"><div className="flex items-center gap-2 text-amber-800"><MessageSquareText size={19} /><h3 className="font-bold">Commentaires de l’administration</h3></div><p className="mt-2 text-sm leading-5 text-amber-900/75">Aucune remarque de correction disponible pour le moment. Les commentaires apparaîtront ici dès qu’ils seront ajoutés à une saisie.</p></div>
+        <div className="rounded-2xl border border-black/5 bg-white p-4 shadow-sm"><div className="flex items-center gap-2 text-adressa-deep"><MessageSquareText size={19} className="text-adressa-green" /><h3 className="font-bold">Commentaires de l’administration</h3></div>{latestComments.length ? <ul className="mt-3 space-y-3">{latestComments.map((comment) => <li key={comment.id} className="rounded-xl bg-adressa-light/60 p-3"><Link href={`/dashboard/addresses/${encodeURIComponent(comment.address.adresssaId)}/edit`} className="text-xs font-bold text-adressa-green hover:underline">{comment.address.adresssaId}</Link><p className="mt-1 text-sm leading-5 text-adressa-ink/80">{comment.message}</p><p className="mt-2 text-[11px] text-adressa-ink/50">{comment.authorName} · {comment.createdAt.toLocaleDateString("fr-FR")}</p></li>)}</ul> : <p className="mt-2 text-sm leading-5 text-adressa-ink/60">Aucune remarque pour le moment. L’administration pourra vous laisser des consignes directement sur une saisie.</p>}</div>
       </section>
 
       <nav aria-label="Navigation terrain" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-black/10 bg-white/95 px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden">

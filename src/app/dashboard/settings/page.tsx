@@ -6,7 +6,7 @@ import { SettingsTabs } from "@/components/settings/SettingsTabs";
 
 export const dynamic = "force-dynamic";
 
-type UserRow = { id: string; name: string; email: string; role: string; commune: { id: string; name: string } | null };
+type UserRow = { id: string; name: string; email: string; role: string; profilePhotoUrl: string | null; commune: { id: string; name: string } | null };
 type CommuneRow = { id: string; name: string; logoUrl: string | null; contactEmail: string | null; contactPhone: string | null };
 
 export default async function SettingsPage() {
@@ -20,7 +20,7 @@ export default async function SettingsPage() {
   if (canManageSettings) {
     [users, communes] = await Promise.all([
       prisma.user.findMany({
-        select: { id: true, name: true, email: true, role: true, commune: { select: { id: true, name: true } } },
+        select: { id: true, name: true, email: true, role: true, profilePhotoUrl: true, commune: { select: { id: true, name: true } } },
         orderBy: { createdAt: "desc" }
       }),
       prisma.commune.findMany({

@@ -43,6 +43,7 @@ model User {
   passwordHash String
   role         Role     @default(AGENT)
   communeId    String?
+  profilePhotoUrl String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -50,6 +51,7 @@ model User {
   addressesCreated Address[]        @relation("AddressCreatedBy")
   addressesUpdated Address[]        @relation("AddressUpdatedBy")
   historyEntries   AddressHistory[]
+  authoredAddressComments AddressComment[]
 
   @@index([communeId])
   @@map("users")
@@ -179,6 +181,7 @@ model Address {
   qrCode  QrCode?
   scans   Scan[]
   history AddressHistory[]
+  comments AddressComment[]
 
   @@index([communeId])
   @@index([neighborhoodId])
@@ -186,6 +189,22 @@ model Address {
   @@index([occupancyType])
   @@index([businessCategory])
   @@map("addresses")
+}
+
+model AddressComment {
+  id         String   @id @default(cuid())
+  addressId  String
+  authorId   String?
+  authorName String
+  message    String
+  createdAt  DateTime @default(now())
+
+  address Address @relation(fields: [addressId], references: [id], onDelete: Cascade)
+  author  User?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([addressId, createdAt])
+  @@index([authorId])
+  @@map("address_comments")
 }
 
 model QrCode {

@@ -5,7 +5,7 @@ import { UsersTab } from "./UsersTab";
 import { CommuneTab } from "./CommuneTab";
 import { SecurityTab } from "./SecurityTab";
 
-type UserRow = { id: string; name: string; email: string; role: string; commune: { id: string; name: string } | null };
+type UserRow = { id: string; name: string; email: string; role: string; profilePhotoUrl: string | null; commune: { id: string; name: string } | null };
 type Commune = { id: string; name: string; logoUrl: string | null; contactEmail: string | null; contactPhone: string | null };
 
 type SettingsTabsProps = {

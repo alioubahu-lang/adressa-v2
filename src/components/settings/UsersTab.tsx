@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Camera, UserRound } from "lucide-react";
 
 const roleOptions = [
   { value: "AGENT", label: "Agent terrain" },
@@ -20,6 +21,7 @@ type UserRow = {
   name: string;
   email: string;
   role: string;
+  profilePhotoUrl: string | null;
   commune: { id: string; name: string } | null;
 };
 
@@ -36,6 +38,8 @@ export function UsersTab({ users, communes, currentUserId }: { users: UserRow[];
   const [communeId, setCommuneId] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [uploadingPhotoFor, setUploadingPhotoFor] = useState<string | null>(null);
+  const [photoMessage, setPhotoMessage] = useState<string | null>(null);
 
   function openCreate() {
     setEditingUser(null);
@@ -92,6 +96,25 @@ export function UsersTab({ users, communes, currentUserId }: { users: UserRow[];
     if (res.ok) router.refresh();
   }
 
+  async function handleProfilePhoto(user: UserRow, file?: File) {
+    if (!file) return;
+    setUploadingPhotoFor(user.id);
+    setPhotoMessage(null);
+    const form = new FormData();
+    form.append("photo", file);
+    try {
+      const response = await fetch(`/api/users/${user.id}/profile-photo`, { method: "POST", body: form });
+      const data = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(data?.error ?? "La photo n’a pas pu être enregistrée.");
+      setPhotoMessage(`Photo de ${user.name} mise à jour.`);
+      router.refresh();
+    } catch (cause) {
+      setPhotoMessage(cause instanceof Error ? cause.message : "La photo n’a pas pu être enregistrée.");
+    } finally {
+      setUploadingPhotoFor(null);
+    }
+  }
+
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
@@ -100,12 +123,14 @@ export function UsersTab({ users, communes, currentUserId }: { users: UserRow[];
           + Ajouter un utilisateur
         </button>
       </div>
+      {photoMessage && <p role="status" className="mb-3 rounded-lg bg-adressa-light px-3 py-2 text-sm text-adressa-deep">{photoMessage}</p>}
 
       <div className="card overflow-x-auto p-0">
         <table className="w-full text-left text-sm">
           <thead className="bg-adressa-light text-adressa-deep">
             <tr>
               <th className="px-4 py-3">Nom</th>
+              <th className="px-4 py-3">Photo de profil agent</th>
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Rôle</th>
               <th className="px-4 py-3">Commune associée</th>
@@ -116,6 +141,15 @@ export function UsersTab({ users, communes, currentUserId }: { users: UserRow[];
             {users.map((u) => (
               <tr key={u.id} className="border-t border-black/5">
                 <td className="px-4 py-3">{u.name}</td>
+                <td className="px-4 py-3">
+                  {u.role === "AGENT" ? <div className="flex items-center gap-2.5">
+                    <span role="img" aria-label={`Photo de ${u.name}`} className={`grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-adressa-light text-xs font-bold text-adressa-deep ${u.profilePhotoUrl ? "bg-cover bg-center" : ""}`} style={u.profilePhotoUrl ? { backgroundImage: `url("${u.profilePhotoUrl}")` } : undefined}>{!u.profilePhotoUrl && <UserRound size={18} />}</span>
+                    <label className={`inline-flex cursor-pointer items-center gap-1 text-xs font-semibold text-adressa-green hover:underline ${uploadingPhotoFor === u.id ? "pointer-events-none opacity-50" : ""}`}>
+                      <Camera size={14} />{uploadingPhotoFor === u.id ? "Envoi…" : u.profilePhotoUrl ? "Modifier" : "Ajouter"}
+                      <input type="file" accept="image/*" className="sr-only" disabled={uploadingPhotoFor === u.id} onChange={(event) => { void handleProfilePhoto(u, event.target.files?.[0]); event.target.value = ""; }} />
+                    </label>
+                  </div> : <span className="text-xs text-adressa-ink/40">—</span>}
+                </td>
                 <td className="px-4 py-3">{u.email}</td>
                 <td className="px-4 py-3">{roleLabels[u.role] ?? u.role}</td>
                 <td className="px-4 py-3">{u.commune?.name ?? "—"}</td>

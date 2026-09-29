@@ -22,6 +22,7 @@ type UserRow = {
   name: string;
   email: string;
   role: string;
+  profilePhotoUrl: string | null;
   createdAt: Date;
   commune: { id: string; name: string } | null;
 };
@@ -33,7 +34,7 @@ export async function GET() {
   }
 
   const users: UserRow[] = await prisma.user.findMany({
-    select: { id: true, name: true, email: true, role: true, createdAt: true, commune: { select: { id: true, name: true } } },
+    select: { id: true, name: true, email: true, role: true, profilePhotoUrl: true, createdAt: true, commune: { select: { id: true, name: true } } },
     orderBy: { createdAt: "desc" }
   });
 

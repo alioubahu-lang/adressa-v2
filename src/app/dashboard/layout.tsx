@@ -15,9 +15,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
   const role = (session.user as any)?.role;
   const isAgent = role === "AGENT";
-  const communeId = (session.user as any)?.communeId as string | undefined;
-  const assignedCommune = isAgent && communeId ? await prisma.commune.findUnique({ where: { id: communeId }, select: { name: true } }) : null;
-  const agentName = session.user?.name || "Agent ADRESSA";
+  const userId = (session.user as any)?.id as string | undefined;
+  const agentProfile = isAgent && userId ? await prisma.user.findUnique({ where: { id: userId }, select: { name: true, profilePhotoUrl: true, commune: { select: { name: true } } } }) : null;
+  const agentName = agentProfile?.name || session.user?.name || "Agent ADRESSA";
   const initials = agentName.split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase();
 
   return (
@@ -32,8 +32,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <div className="flex items-center gap-4">
             <SyncStatus />
             {isAgent ? <div className="flex items-center gap-3">
-              <span className="grid size-10 place-items-center rounded-full bg-adressa-light text-sm font-bold text-adressa-deep" aria-label="Photo de profil à ajouter">{initials}</span>
-              <span className="hidden text-right sm:block"><span className="block text-sm font-semibold text-adressa-deep">{agentName} · AGENT DE TERRAIN</span><span className="block text-xs text-adressa-ink/60">Zone : {assignedCommune?.name ?? "À affecter"}</span></span>
+              <span role="img" aria-label={`Photo de ${agentName}`} className={`grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-adressa-light text-sm font-bold text-adressa-deep ${agentProfile?.profilePhotoUrl ? "bg-cover bg-center" : ""}`} style={agentProfile?.profilePhotoUrl ? { backgroundImage: `url("${agentProfile.profilePhotoUrl}")` } : undefined}>{!agentProfile?.profilePhotoUrl && initials}</span>
+              <span className="text-right"><span className="block max-w-[145px] truncate text-xs font-semibold text-adressa-deep sm:max-w-none sm:text-sm">{agentName} · AGENT DE TERRAIN</span><span className="block text-[11px] text-adressa-ink/60 sm:text-xs">Zone : {agentProfile?.commune?.name ?? "À affecter"}</span></span>
               <span className="hidden text-xs font-semibold text-emerald-700 lg:flex"><AgentNetworkStatus /></span>
             </div> : <span className="text-sm text-adressa-ink/60">{session.user?.name} · {role}</span>}
           </div>

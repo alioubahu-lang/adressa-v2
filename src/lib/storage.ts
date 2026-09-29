@@ -38,4 +38,8 @@ export async function uploadCommuneLogo(file: Buffer, communeId: string): Promis
   return uploadImage(file, "communes", communeId);
 }
 
+export async function uploadAgentProfilePhoto(file: Buffer, userId: string): Promise<string> {
+  return uploadImage(file, "agent-profiles", userId);
+}
+
 export const MAX_PHOTO_SIZE_BYTES = 8 * 1024 * 1024; // 8 Mo avant compression

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { AddressComments } from "@/components/agent/AddressComments";
 
 type AddressDetail = {
   adresssaId: string;
@@ -21,8 +22,10 @@ type AddressDetail = {
 export default function EditAddressPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { data: session, status: sessionStatus } = useSession();
-  const isAgent = sessionStatus === "authenticated" && (session?.user as any)?.role === "AGENT";
-  const canManageStatus = sessionStatus === "authenticated" && !isAgent;
+  const role = (session?.user as any)?.role;
+  const isAgent = sessionStatus === "authenticated" && role === "AGENT";
+  const isAdmin = sessionStatus === "authenticated" && (role === "ADMIN" || role === "SUPER_ADMIN");
+  const canManageStatus = isAdmin;
   const [address, setAddress] = useState<AddressDetail | null>(null);
   const [notFoundError, setNotFoundError] = useState(false);
 
@@ -238,6 +241,8 @@ export default function EditAddressPage({ params }: { params: { id: string } }) 
           {canManageStatus ? <Link href={`/a/${address.adresssaId}`} className="btn-secondary">Voir la fiche</Link> : <Link href="/dashboard/terrain" className="btn-secondary">Retour à mes saisies</Link>}
         </div>
       </form>
+
+      {(isAgent || isAdmin) && <AddressComments adresssaId={address.adresssaId} canComment={isAdmin} />}
 
       {canManageStatus && <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4">
         <p className="text-sm font-semibold text-red-700">Zone dangereuse</p>
