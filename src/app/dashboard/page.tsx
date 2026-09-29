@@ -26,6 +26,7 @@ type RecentAddressWithScan = {
   status: string;
   verified: boolean;
   createdAt: Date;
+  commune: { name: string };
   neighborhood: { name: string };
   scans: { date: Date }[];
 };
@@ -40,11 +41,17 @@ function formatDayLabel(d: Date) {
   return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" });
 }
 
-async function getDashboardData() {
+async function getDashboardData(requestedCommuneId?: string) {
   const startOfMonth = new Date();
   startOfMonth.setDate(1);
   startOfMonth.setHours(0, 0, 0, 0);
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const communes = await prisma.commune.findMany({ orderBy: { name: "asc" } });
+  const defaultCommuneId = communes.find((commune) => commune.code === "SBK" || commune.name === "Sébikotane")?.id ?? "all";
+  const selectedCommuneId = requestedCommuneId && communes.some((commune) => commune.id === requestedCommuneId)
+    ? requestedCommuneId
+    : defaultCommuneId;
+  const addressWhere = selectedCommuneId === "all" ? {} : { communeId: selectedCommuneId };
 
   const [
     total,
@@ -54,29 +61,44 @@ async function getDashboardData() {
     activeQr,
     scans30d,
     createdThisMonth,
-    communes,
     scansLast30,
     addressesLast30,
-    recentAddresses
+    recentAddresses,
+    mapAddressRecords
   ] = await Promise.all([
-    prisma.address.count(),
-    prisma.address.count({ where: { verified: true } }),
-    prisma.address.count({ where: { verified: false } }),
-    prisma.address.groupBy({ by: ["communeId"] }).then((r: unknown[]) => r.length),
-    prisma.qrCode.count({ where: { active: true } }),
-    prisma.scan.count({ where: { date: { gte: thirtyDaysAgo } } }),
-    prisma.address.count({ where: { createdAt: { gte: startOfMonth } } }),
-    prisma.commune.findMany({ orderBy: { name: "asc" } }),
-    prisma.scan.findMany({ where: { date: { gte: thirtyDaysAgo } }, select: { date: true } }),
-    prisma.address.findMany({ where: { createdAt: { gte: thirtyDaysAgo } }, select: { createdAt: true } }),
+    prisma.address.count({ where: addressWhere }),
+    prisma.address.count({ where: { ...addressWhere, verified: true } }),
+    prisma.address.count({ where: { ...addressWhere, verified: false } }),
+    prisma.address.groupBy({ by: ["communeId"], where: addressWhere }).then((r: unknown[]) => r.length),
+    prisma.qrCode.count({ where: { active: true, address: addressWhere } }),
+    prisma.scan.count({ where: { date: { gte: thirtyDaysAgo }, address: addressWhere } }),
+    prisma.address.count({ where: { ...addressWhere, createdAt: { gte: startOfMonth } } }),
+    prisma.scan.findMany({ where: { date: { gte: thirtyDaysAgo }, address: addressWhere }, select: { date: true } }),
+    prisma.address.findMany({ where: { ...addressWhere, createdAt: { gte: thirtyDaysAgo } }, select: { createdAt: true } }),
     prisma.address.findMany({
+      where: addressWhere,
       orderBy: { createdAt: "desc" },
       take: 8,
       include: {
+        commune: true,
         neighborhood: true,
         scans: { orderBy: { date: "desc" }, take: 1, select: { date: true } }
       }
-    }) as Promise<RecentAddressWithScan[]>
+    }) as Promise<RecentAddressWithScan[]>,
+    prisma.address.findMany({
+      where: addressWhere,
+      orderBy: { createdAt: "desc" },
+      select: {
+        adresssaId: true,
+        latitude: true,
+        longitude: true,
+        landmark: true,
+        verified: true,
+        createdAt: true,
+        commune: { select: { name: true } },
+        neighborhood: { select: { name: true } }
+      }
+    })
   ]);
 
   // Construction des points journaliers pour le graphique (30 derniers jours)
@@ -98,18 +120,20 @@ async function getDashboardData() {
     if (idx >= 0 && idx < 30) dayBuckets[idx].creations += 1;
   }
 
-  const mapAddresses: DashboardAddress[] = recentAddresses.map((a) => ({
+  const mapAddresses: DashboardAddress[] = mapAddressRecords.map((a) => ({
     adresssaId: a.adresssaId,
     latitude: a.latitude,
     longitude: a.longitude,
-    commune: "",
+    commune: a.commune.name,
     neighborhood: a.neighborhood.name,
+    landmark: a.landmark,
     verified: a.verified,
     createdAt: a.createdAt.toISOString()
   }));
 
   const recentRows: RecentAddressRow[] = recentAddresses.map((a) => ({
     adresssaId: a.adresssaId,
+    commune: a.commune.name,
     neighborhood: a.neighborhood.name,
     landmark: a.landmark,
     status: a.status,
@@ -125,13 +149,14 @@ async function getDashboardData() {
     scans30d,
     createdThisMonth,
     communes,
+    selectedCommuneId,
     dayBuckets,
     mapAddresses,
     recentRows
   };
 }
 
-export default async function DashboardOverviewPage() {
+export default async function DashboardOverviewPage({ searchParams }: { searchParams?: { commune?: string } }) {
   const session = await getServerSession(authOptions);
   const role = (session?.user as any)?.role;
 
@@ -143,7 +168,7 @@ export default async function DashboardOverviewPage() {
     if (defaultView === "logistics") redirect("/dashboard/logistics");
   }
 
-  const stats = await getDashboardData();
+  const stats = await getDashboardData(searchParams?.commune);
   const verifiedPct = stats.total > 0 ? Math.round((stats.verified / stats.total) * 100) : 0;
 
   return (
@@ -152,10 +177,10 @@ export default async function DashboardOverviewPage() {
         <h1 className="text-2xl font-bold text-adressa-deep">Vue générale</h1>
       </div>
 
-      <QuickActionsBar communes={stats.communes} />
+      <QuickActionsBar communes={stats.communes} selectedCommuneId={stats.selectedCommuneId} />
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6 xl:gap-5">
         <KpiCard label="Total adresses" value={stats.total} Icon={MapPin} trend={`+${stats.createdThisMonth} ce mois`} />
         <KpiCard
           label="Adresses vérifiées"

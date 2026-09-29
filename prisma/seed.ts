@@ -43,11 +43,11 @@ async function seedSenegalTerritory(countryId: string) {
 }
 
 const PILOT_ADDRESSES = [
-  { id: "SN-SBK-001", plusCode: "PVP4+3C8", lat: 14.7351698, lng: -17.1439253 },
-  { id: "SN-SBK-002", plusCode: "PVP4+3C9", lat: 14.7351691, lng: -17.1438918 },
-  { id: "SN-SBK-003", plusCode: "PVM4+R8M", lat: 14.7345829, lng: -17.144212 },
-  { id: "SN-SBK-004", plusCode: "PVM4+PC5", lat: 14.734268, lng: -17.1439012 },
-  { id: "SN-SBK-005", plusCode: "PVM4+GC9", lat: 14.7337752, lng: -17.1438948 }
+  { id: "SN-SBK-001", plusCode: "PVP4+3C8", lat: 14.7351698, lng: -17.1439253, landmark: "À proximité de TotalEnergies Sébikotane" },
+  { id: "SN-SBK-002", plusCode: "PVP4+3C9", lat: 14.7351691, lng: -17.1438918, landmark: "Face à la mosquée centrale de Tanghor" },
+  { id: "SN-SBK-003", plusCode: "PVM4+R8M", lat: 14.7345829, lng: -17.144212, landmark: "Près de l’école primaire de Tanghor" },
+  { id: "SN-SBK-004", plusCode: "PVM4+PC5", lat: 14.734268, lng: -17.1439012, landmark: "À l’angle de la route principale et de la rue du marché" },
+  { id: "SN-SBK-005", plusCode: "PVM4+GC9", lat: 14.7337752, lng: -17.1438948, landmark: "Derrière le poste de santé de Sébikotane" }
 ];
 
 async function main() {
@@ -111,7 +111,7 @@ async function main() {
   for (const [index, a] of PILOT_ADDRESSES.entries()) {
     const address = await prisma.address.upsert({
       where: { adresssaId: a.id },
-      update: { buildingType: "Maison individuelle" },
+      update: { buildingType: "Maison individuelle", landmark: a.landmark },
       create: {
         adresssaId: a.id,
         countryId: country.id,
@@ -122,7 +122,7 @@ async function main() {
         latitude: a.lat,
         longitude: a.lng,
         plusCode: a.plusCode,
-        landmark: "À proximité de TotalEnergies Sébikotane",
+        landmark: a.landmark,
         buildingType: "Maison individuelle",
         status: "PUBLIE",
         verified: true

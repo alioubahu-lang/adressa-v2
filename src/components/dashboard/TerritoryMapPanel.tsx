@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { MapContainer, TileLayer, Marker, Popup, Tooltip as MapTooltip, ZoomControl, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import Link from "next/link";
+import { Maximize2, Minimize2 } from "lucide-react";
 
 const markerIcon = new L.Icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -27,14 +28,43 @@ export type DashboardAddress = {
   longitude: number;
   commune: string;
   neighborhood: string;
+  landmark: string | null;
   verified: boolean;
   createdAt: string; // ISO
 };
 
 type Filter = "all" | "recent" | "unverified";
 
+function InvalidateMapSize({ active }: { active: boolean }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => map.invalidateSize());
+    return () => window.cancelAnimationFrame(frame);
+  }, [active, map]);
+
+  return null;
+}
+
 export function TerritoryMapPanel({ addresses }: { addresses: DashboardAddress[] }) {
   const [filter, setFilter] = useState<Filter>("all");
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updateFullscreenState = () => setIsFullscreen(document.fullscreenElement === panelRef.current);
+    document.addEventListener("fullscreenchange", updateFullscreenState);
+    return () => document.removeEventListener("fullscreenchange", updateFullscreenState);
+  }, []);
+
+  async function toggleFullscreen() {
+    if (!panelRef.current) return;
+    if (document.fullscreenElement === panelRef.current) {
+      await document.exitFullscreen();
+    } else {
+      await panelRef.current.requestFullscreen();
+    }
+  }
 
   const filtered = useMemo(() => {
     if (filter === "unverified") return addresses.filter((a) => !a.verified);
@@ -59,10 +89,10 @@ export function TerritoryMapPanel({ addresses }: { addresses: DashboardAddress[]
   ];
 
   return (
-    <div className="card p-0 overflow-hidden">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/5 p-4">
+    <div ref={panelRef} className={`card flex flex-col overflow-hidden p-0 ${isFullscreen ? "h-screen bg-white p-4" : ""}`}>
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-black/5 p-4">
         <h2 className="text-sm font-bold text-adressa-deep">Vue territoriale</h2>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {chips.map((c) => (
             <button
               key={c.id}
@@ -75,23 +105,42 @@ export function TerritoryMapPanel({ addresses }: { addresses: DashboardAddress[]
               {c.label}
             </button>
           ))}
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen ? "Quitter le plein écran" : "Afficher la carte en plein écran"}
+            aria-pressed={isFullscreen}
+            title={isFullscreen ? "Quitter le plein écran" : "Plein écran"}
+            className="ml-1 grid size-9 place-items-center rounded-lg border border-black/10 bg-white text-adressa-ink/70 transition hover:bg-adressa-light hover:text-adressa-deep focus-visible:outline focus-visible:outline-2 focus-visible:outline-adressa-green"
+          >
+            {isFullscreen ? <Minimize2 size={17} /> : <Maximize2 size={17} />}
+          </button>
         </div>
       </div>
 
-      <div className="relative h-96">
-        <MapContainer center={center} zoom={16} style={{ height: "100%", width: "100%" }}>
+      <div className={`relative min-h-80 ${isFullscreen ? "flex-1" : "h-96"}`}>
+        <MapContainer center={center} zoom={16} zoomControl={false} style={{ height: "100%", width: "100%" }}>
+          <InvalidateMapSize active={isFullscreen} />
+          <ZoomControl position="bottomright" />
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           {filtered.map((a) => (
             <Marker key={a.adresssaId} position={[a.latitude, a.longitude]} icon={a.verified ? verifiedIcon : markerIcon}>
+              <MapTooltip direction="top" offset={[0, -10]} sticky>
+                <div className="text-xs">
+                  <div className="font-bold">{a.adresssaId}</div>
+                  <div>{a.landmark || "Repère non renseigné"}</div>
+                </div>
+              </MapTooltip>
               <Popup>
                 <div className="text-sm">
                   <div className="font-bold">{a.adresssaId}</div>
                   <div>
                     {a.commune} · {a.neighborhood}
                   </div>
+                  <div className="mt-1 text-adressa-ink/65">{a.landmark || "Repère non renseigné"}</div>
                   <Link href={`/dashboard/addresses/${a.adresssaId}/edit`} className="mt-1 inline-block text-adressa-green underline">
                     Modifier
                   </Link>

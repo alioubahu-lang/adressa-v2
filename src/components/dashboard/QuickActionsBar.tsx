@@ -2,18 +2,28 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Plus, Download, Bell, ChevronDown } from "lucide-react";
 
-export function QuickActionsBar({ communes }: { communes: { id: string; name: string }[] }) {
+export function QuickActionsBar({ communes, selectedCommuneId }: { communes: { id: string; name: string }[]; selectedCommuneId: string }) {
   const [exportOpen, setExportOpen] = useState(false);
+  const router = useRouter();
 
   return (
     <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
       <div className="flex items-center gap-2 text-sm text-adressa-ink/60">
         <span>Commune active :</span>
         <div className="relative">
-          <select className="appearance-none rounded-lg border border-black/10 bg-white py-1.5 pl-3 pr-8 text-sm font-semibold text-adressa-deep">
-            {communes.length === 0 && <option>Sébikotane</option>}
+          <select
+            value={selectedCommuneId}
+            onChange={(event) => {
+              const communeId = event.target.value;
+              router.push(communeId === "all" ? "/dashboard" : `/dashboard?commune=${encodeURIComponent(communeId)}`);
+            }}
+            aria-label="Choisir la commune à afficher"
+            className="appearance-none rounded-lg border border-black/10 bg-white py-1.5 pl-3 pr-8 text-sm font-semibold text-adressa-deep"
+          >
+            <option value="all">Toutes les communes</option>
             {communes.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}

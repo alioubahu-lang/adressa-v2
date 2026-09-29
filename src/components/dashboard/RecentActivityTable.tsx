@@ -2,6 +2,7 @@ import Link from "next/link";
 
 export type RecentAddressRow = {
   adresssaId: string;
+  commune: string;
   neighborhood: string;
   landmark: string | null;
   status: string;
@@ -14,6 +15,14 @@ const statusStyles: Record<string, string> = {
   A_VERIFIER: "bg-orange-100 text-orange-700",
   COLLECTE: "bg-sky-100 text-sky-700",
   BROUILLON: "bg-gray-100 text-gray-600"
+};
+
+const statusLabels: Record<string, string> = {
+  PUBLIE: "PUBLIÉ",
+  VERIFIE: "VÉRIFIÉ",
+  A_VERIFIER: "À VÉRIFIER",
+  COLLECTE: "COLLECTÉ",
+  BROUILLON: "BROUILLON"
 };
 
 function formatRelativeDate(iso: string | null) {
@@ -41,25 +50,28 @@ export function RecentActivityTable({ rows }: { rows: RecentAddressRow[] }) {
             <th className="px-4 py-3">Code ADRESSA</th>
             <th className="px-4 py-3">Quartier</th>
             <th className="px-4 py-3">Repère</th>
-            <th className="px-4 py-3">Statut</th>
+            <th className="px-4 py-3 text-center">Statut</th>
             <th className="px-4 py-3">Dernier scan</th>
-            <th className="px-4 py-3">Actions</th>
+            <th className="px-4 py-3 text-center">Actions</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((r) => (
             <tr key={r.adresssaId} className="border-t border-black/5">
               <td className="px-4 py-3 font-semibold text-adressa-green">{r.adresssaId}</td>
-              <td className="px-4 py-3">{r.neighborhood}</td>
-              <td className="px-4 py-3 text-adressa-ink/60">{r.landmark ?? "—"}</td>
               <td className="px-4 py-3">
-                <span className={`rounded-full px-2 py-1 text-xs font-semibold ${statusStyles[r.status] ?? "bg-gray-100 text-gray-600"}`}>
-                  {r.status}
+                <span className="font-medium">{r.neighborhood}</span>
+                <span className="mt-0.5 block text-xs text-adressa-ink/45">{r.commune}</span>
+              </td>
+              <td className="px-4 py-3 text-adressa-ink/60">{r.landmark ?? "—"}</td>
+              <td className="px-4 py-3 text-center align-middle">
+                <span className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold ${statusStyles[r.status] ?? "bg-gray-100 text-gray-600"}`}>
+                  {statusLabels[r.status] ?? r.status}
                 </span>
               </td>
-              <td className="px-4 py-3 text-adressa-ink/60">{formatRelativeDate(r.lastScanAt)}</td>
-              <td className="px-4 py-3">
-                <div className="flex gap-2">
+              <td className="px-4 py-3 align-middle text-adressa-ink/60">{formatRelativeDate(r.lastScanAt)}</td>
+              <td className="px-4 py-3 align-middle">
+                <div className="flex justify-center gap-3 whitespace-nowrap">
                   <Link href={`/a/${r.adresssaId}`} className="text-adressa-green underline">
                     Voir
                   </Link>

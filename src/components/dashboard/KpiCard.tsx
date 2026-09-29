@@ -16,15 +16,15 @@ const toneStyles: Record<NonNullable<KpiCardProps["tone"]>, string> = {
 
 export function KpiCard({ label, value, Icon, trend, tone = "neutral" }: KpiCardProps) {
   return (
-    <div className="card">
-      <div className="flex items-start justify-between">
-        <div className={`rounded-xl p-2 ${toneStyles[tone]}`}>
+    <div className="card flex h-full min-w-0 flex-col items-center px-3 py-4 text-center sm:px-4 sm:py-5">
+      <div className="flex w-full justify-center">
+        <div className={`grid size-11 shrink-0 place-items-center rounded-xl ${toneStyles[tone]}`}>
           <Icon size={20} strokeWidth={1.75} />
         </div>
       </div>
-      <div className="mt-3 text-2xl font-black text-adressa-deep">{value}</div>
-      <div className="mt-1 text-xs text-adressa-ink/60">{label}</div>
-      {trend && <div className="mt-2 text-[11px] font-semibold text-adressa-green">{trend}</div>}
+      <div className="mt-3 text-2xl font-black tabular-nums text-adressa-deep">{value}</div>
+      <div className="mt-1 text-xs leading-5 text-adressa-ink/60">{label}</div>
+      {trend && <div className="mt-2 text-[11px] font-semibold leading-4 text-adressa-green">{trend}</div>}
     </div>
   );
 }
