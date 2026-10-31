@@ -25,7 +25,7 @@ const createAddressSchema = z.object({
   photoUrl: z.string().url().optional().nullable(),
   businessPhotoUrl: z.string().url().optional().nullable(),
   platePhotoUrl: z.string().url().optional().nullable(),
-  occupancyType: z.enum(["RESIDENTIEL", "COMMERCIAL", "PUBLIC"]).optional().nullable(),
+  occupancyType: z.enum(["RESIDENTIEL", "COMMERCIAL", "PUBLIC", "TERRAIN_NU"]).optional().nullable(),
   businessName: z.string().trim().max(160).optional().nullable(),
   businessCategory: z.string().trim().max(80).optional().nullable(),
   businessNinea: z.string().trim().max(80).optional().nullable(),
