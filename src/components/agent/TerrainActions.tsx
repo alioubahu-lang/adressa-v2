@@ -44,7 +44,7 @@ export function TerrainActions() {
       <button type="button" onClick={() => setScanOpen(true)} className="flex min-h-[68px] items-center gap-3 rounded-2xl border border-black/5 bg-white px-4 py-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
         <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-violet-50 text-violet-700"><Camera size={21} /></span><span><strong className="block text-sm text-adressa-deep">Scanner un QR Code / plaque</strong><span className="text-xs text-adressa-ink/55">Lecture par la caméra</span></span><ArrowRight className="ml-auto text-adressa-ink/30" size={17} />
       </button>
-      <Link href="/dashboard/addresses/new" className="flex min-h-[68px] items-center gap-3 rounded-2xl border border-black/5 bg-white px-4 py-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+      <Link href="/dashboard/terrain/saisie" className="flex min-h-[68px] items-center gap-3 rounded-2xl border border-black/5 bg-white px-4 py-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
         <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-sky-50 text-sky-700"><Database size={21} /></span><span><strong className="block text-sm text-adressa-deep">Saisie rapide hors ligne</strong><span className="text-xs text-adressa-ink/55">{offlineCount ? `${offlineCount} en attente de synchro` : "Enregistrement local disponible"}</span></span><ArrowRight className="ml-auto text-adressa-ink/30" size={17} />
       </Link>
     </section>

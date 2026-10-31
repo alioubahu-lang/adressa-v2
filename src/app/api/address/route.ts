@@ -30,7 +30,7 @@ const createAddressSchema = z.object({
   businessCategory: z.string().trim().max(80).optional().nullable(),
   businessNinea: z.string().trim().max(80).optional().nullable(),
   businessRegister: z.string().trim().max(80).optional().nullable(),
-  plateStatus: z.enum(["POSEE", "EN_ATTENTE"]).optional().nullable(),
+  plateStatus: z.enum(["POSEE", "EN_ATTENTE", "INACCESSIBLE", "A_REFAIRE"]).optional().nullable(),
   gpsAccuracyMeters: z.number().min(0).max(100000).optional().nullable(),
   clientRequestId: z.string().uuid().optional()
 }).superRefine((data, context) => {

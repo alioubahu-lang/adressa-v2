@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { AlertCircle, ArrowRight, CheckCircle2, Clock3, Compass, Database, Home, ListChecks, MapPin, MessageSquareText, Plus, WifiOff } from "lucide-react";
 import { TerrainActions, AgentNetworkStatus } from "@/components/agent/TerrainActions";
+import { TodayRecords } from "@/components/agent/TodayRecords";
 import AgentTerrainMap from "@/components/agent/AgentTerrainMap";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -17,7 +18,7 @@ function statusInfo(status: string) {
   return { label: "En attente", classes: "bg-amber-50 text-amber-800", icon: Clock3 };
 }
 
-export default async function AgentTerrainPage({ searchParams }: { searchParams?: { queued?: string; created?: string } }) {
+export default async function AgentTerrainPage({ searchParams }: { searchParams?: { queued?: string; created?: string; updated?: string } }) {
   const session = await getServerSession(authOptions);
   const user = session?.user as any;
   if (!session) redirect("/login");
@@ -28,8 +29,9 @@ export default async function AgentTerrainPage({ searchParams }: { searchParams?
 
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const commonWhere = { createdById: user.id, communeId: communeId ?? "__no_assignment__" };
-  const [pending, toCorrect, validatedHistory, addresses, latestComments, commune] = await Promise.all([
+  const [pending, toCorrect, validatedHistory, addresses, todayRecords, latestComments, commune] = await Promise.all([
     prisma.address.count({ where: { ...commonWhere, verified: false, status: { in: [...pendingStatuses] } } }),
     prisma.address.count({ where: { ...commonWhere, verified: false, status: "BROUILLON" } }),
     prisma.addressHistory.findMany({
@@ -42,6 +44,11 @@ export default async function AgentTerrainPage({ searchParams }: { searchParams?
       select: { id: true, adresssaId: true, latitude: true, longitude: true, status: true, createdAt: true, landmark: true,
         neighborhood: { select: { name: true } }, commune: { select: { name: true } } },
       orderBy: { createdAt: "desc" }, take: 50
+    }),
+    prisma.address.findMany({
+      where: { ...commonWhere, verified: false, status: { in: [...pendingStatuses] }, createdAt: { gte: startOfToday } },
+      select: { adresssaId: true, createdAt: true, plateStatus: true, landmark: true, neighborhood: { select: { name: true } } },
+      orderBy: { createdAt: "desc" }, take: 40
     }),
     prisma.addressComment.findMany({
       where: { address: { ...commonWhere, verified: false, status: { in: [...pendingStatuses] } } },
@@ -65,6 +72,7 @@ export default async function AgentTerrainPage({ searchParams }: { searchParams?
     <div className="mx-auto max-w-[1440px] space-y-6 pb-24 md:pb-8">
       {searchParams?.queued && <div className="flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-950"><WifiOff size={18} />Saisie conservée sur cet appareil. Elle sera synchronisée au retour du réseau.</div>}
       {searchParams?.created && <div className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900"><CheckCircle2 size={18} />Votre saisie a été transmise pour validation.</div>}
+      {searchParams?.updated && <div className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900"><CheckCircle2 size={18} />Votre mise à jour a été transmise à l’administration.</div>}
 
       <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-[#073d31] via-[#0c5b43] to-[#0e8060] p-5 text-white shadow-lg sm:p-7">
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
@@ -73,13 +81,18 @@ export default async function AgentTerrainPage({ searchParams }: { searchParams?
             <h1 className="text-2xl font-black tracking-tight sm:text-3xl">Bonjour {savedUser?.name?.split(" ")[0] ?? "agent"}, prêt pour le terrain&nbsp;?</h1>
             <p className="mt-2 max-w-xl text-sm leading-6 text-white/75">Créez des adresses et suivez uniquement vos saisies en cours, dans votre zone de collecte.</p>
           </div>
-          <Link href="/dashboard/addresses/new" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-adressa-deep shadow transition hover:bg-emerald-50"><Plus size={18} />Nouvelle adresse</Link>
+          <Link href="/dashboard/terrain/saisie" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-adressa-deep shadow transition hover:bg-emerald-50"><Plus size={18} />Nouvelle adresse</Link>
         </div>
         <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-white/15 pt-4 text-sm text-white/80">
           <span className="inline-flex items-center gap-2"><MapPin size={15} />Zone : <strong className="text-white">{commune?.name ?? "À affecter"}</strong></span>
           <AgentNetworkStatus />
           <span className="inline-flex items-center gap-2"><Database size={15} />Vos brouillons restent disponibles hors ligne</span>
         </div>
+      </section>
+
+      <section aria-label="Activité du jour" className="grid grid-cols-2 gap-3">
+        <article className="rounded-2xl border border-black/5 bg-white p-4 shadow-sm"><p className="text-xs font-semibold text-adressa-ink/55">Bâtiments saisis aujourd’hui</p><p className="mt-2 text-2xl font-black text-adressa-deep">{todayRecords.length}</p></article>
+        <article className="rounded-2xl border border-black/5 bg-white p-4 shadow-sm"><p className="text-xs font-semibold text-adressa-ink/55">Plaques posées aujourd’hui</p><p className="mt-2 text-2xl font-black text-adressa-deep">{todayRecords.filter((address) => address.plateStatus === "POSEE").length}</p></article>
       </section>
 
       <section aria-label="Mes indicateurs" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -94,7 +107,7 @@ export default async function AgentTerrainPage({ searchParams }: { searchParams?
         <div id="mes-saisies" className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 px-4 py-4 sm:px-5">
             <div><h2 className="font-bold text-adressa-deep">Mes saisies à traiter</h2><p className="mt-1 text-xs text-adressa-ink/55">Uniquement les adresses non validées de votre zone</p></div>
-            <Link href="/dashboard/addresses/new" className="text-sm font-semibold text-adressa-green hover:underline">Nouvelle saisie +</Link>
+          <Link href="/dashboard/terrain/saisie" className="text-sm font-semibold text-adressa-green hover:underline">Nouvelle saisie +</Link>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[680px] text-left text-sm">
@@ -122,6 +135,8 @@ export default async function AgentTerrainPage({ searchParams }: { searchParams?
         </div>
       </section>
 
+      <TodayRecords savedRecords={todayRecords.map((address) => ({ code: address.adresssaId, neighborhood: address.neighborhood.name, landmark: address.landmark, plateStatus: address.plateStatus, createdAt: address.createdAt.toISOString() }))} />
+
       <section className="grid gap-4 lg:grid-cols-3">
         <SuggestionCard Icon={CheckCircle2} title="Formulaire guidé" text="Une collecte par étapes : position, bâtiment, commerce et photos." />
         <SuggestionCard Icon={WifiOff} title="Mode hors ligne" text="Les saisies et photos restent sur cet appareil puis se synchronisent au retour du réseau." />
@@ -130,7 +145,7 @@ export default async function AgentTerrainPage({ searchParams }: { searchParams?
 
       <nav aria-label="Navigation terrain" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-black/10 bg-white/95 px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden">
         <Link href="/dashboard/terrain" className="flex flex-col items-center gap-1 py-1 text-xs font-semibold text-adressa-green"><Home size={18} />Mon espace</Link>
-        <Link href="/dashboard/addresses/new" className="flex flex-col items-center gap-1 py-1 text-xs text-adressa-ink/70"><Plus size={18} />Nouvelle adresse</Link>
+        <Link href="/dashboard/terrain/saisie" className="flex flex-col items-center gap-1 py-1 text-xs text-adressa-ink/70"><Plus size={18} />Nouvelle adresse</Link>
         <Link href="#mes-saisies" className="flex flex-col items-center gap-1 py-1 text-xs text-adressa-ink/70"><ListChecks size={18} />Mes saisies</Link>
       </nav>
     </div>

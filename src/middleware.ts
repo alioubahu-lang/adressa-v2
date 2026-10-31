@@ -11,9 +11,10 @@ export async function middleware(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   if (pathname.startsWith("/dashboard") && token?.role === "AGENT") {
     const isAgentDashboard = pathname === "/dashboard/terrain";
+    const isAgentQuickCapture = pathname === "/dashboard/terrain/saisie";
     const isNewAddress = pathname === "/dashboard/addresses/new";
     const isAddressEdit = /^\/dashboard\/addresses\/[^/]+\/edit$/.test(pathname);
-    if (!isAgentDashboard && !isNewAddress && !isAddressEdit) {
+    if (!isAgentDashboard && !isAgentQuickCapture && !isNewAddress && !isAddressEdit) {
       return NextResponse.redirect(new URL("/dashboard/terrain", req.url));
     }
   }

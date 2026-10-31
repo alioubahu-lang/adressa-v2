@@ -11,6 +11,7 @@ export type PendingAddress = {
   createdAt: string;
   payload: Record<string, unknown>;
   photos: PendingPhoto[];
+  addressId?: string;
 };
 
 function openQueueDb(): Promise<IDBDatabase> {
@@ -83,7 +84,8 @@ export async function getPendingAddresses(): Promise<PendingAddress[]> {
 
 export async function queueAddress(
   payload: Record<string, unknown>,
-  photos: PendingPhoto[]
+  photos: PendingPhoto[],
+  options?: { addressId?: string }
 ): Promise<string> {
   const db = await openQueueDb();
   const localId = crypto.randomUUID();
@@ -91,7 +93,8 @@ export async function queueAddress(
     localId,
     createdAt: new Date().toISOString(),
     payload: { ...payload, clientRequestId: payload.clientRequestId ?? localId },
-    photos
+    photos,
+    ...(options?.addressId ? { addressId: options.addressId } : {})
   };
   const transaction = db.transaction(STORE_NAME, "readwrite");
   transaction.objectStore(STORE_NAME).add(record);
@@ -101,6 +104,7 @@ export async function queueAddress(
     transaction.onabort = () => reject(transaction.error);
   });
   db.close();
+  if (typeof window !== "undefined") window.dispatchEvent(new Event("adressa:queue-updated"));
   return localId;
 }
 
@@ -118,6 +122,7 @@ async function updateQueuedPayload(localId: string, payload: Record<string, unkn
     transaction.onabort = () => reject(transaction.error);
   });
   db.close();
+  if (typeof window !== "undefined") window.dispatchEvent(new Event("adressa:queue-updated"));
 }
 
 async function removeFromQueue(localId: string): Promise<void> {
@@ -130,6 +135,7 @@ async function removeFromQueue(localId: string): Promise<void> {
     transaction.onabort = () => reject(transaction.error);
   });
   db.close();
+  if (typeof window !== "undefined") window.dispatchEvent(new Event("adressa:queue-updated"));
 }
 
 export async function syncPendingAddresses(): Promise<{ synced: number; failed: number }> {
@@ -144,7 +150,7 @@ export async function syncPendingAddresses(): Promise<{ synced: number; failed: 
         if (typeof payload[photo.field] === "string" && payload[photo.field]) continue;
         const form = new FormData();
         form.append("photo", photo.file, photo.file.name || `${item.localId}.jpg`);
-        form.append("adresssaId", `DRAFT-${item.localId.slice(0, 8).toUpperCase()}`);
+        form.append("adresssaId", item.addressId ?? `DRAFT-${item.localId.slice(0, 8).toUpperCase()}`);
         const upload = await fetch("/api/upload", { method: "POST", body: form });
         if (!upload.ok) throw new Error("Échec d'envoi d'une photo.");
         const { url } = (await upload.json()) as { url: string };
@@ -152,8 +158,8 @@ export async function syncPendingAddresses(): Promise<{ synced: number; failed: 
         await updateQueuedPayload(item.localId, payload);
       }
 
-      const response = await fetch("/api/address", {
-        method: "POST",
+      const response = await fetch(item.addressId ? `/api/address/${encodeURIComponent(item.addressId)}` : "/api/address", {
+        method: item.addressId ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
