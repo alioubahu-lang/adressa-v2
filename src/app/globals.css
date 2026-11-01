@@ -42,3 +42,25 @@ html {
 .animate-pulse-ring {
   animation: pulse-ring 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+@keyframes municipal-marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.municipal-marquee {
+  animation: municipal-marquee-scroll 42s linear infinite;
+}
+
+.municipal-marquee:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .municipal-marquee {
+    animation: none;
+    width: auto;
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+}
